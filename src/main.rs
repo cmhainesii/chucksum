@@ -34,23 +34,39 @@ fn main() -> std::io::Result<()> {
     let checksum_start = 0x2598;
     let checksum_end = 0x3522;
     let checksum_offset = 0x3523;
-    let mut checksum: u8 = 0;
-
-    for byte in &data[checksum_start..=checksum_end] {
-        checksum = checksum.wrapping_add(*byte);
-    }
-    checksum = !checksum;
+    let checksum_value = calculate_checksum(&data, checksum_start, checksum_end);
+    let checksum_validated = validate_checksum(&data, checksum_value, checksum_offset);
 
     let stored = data[checksum_offset];
-    if checksum == stored {
+    if checksum_validated {
         println!("Checksum OK");    
     }
     else {
-        println!("Checksum mismatch: calculated 0x{:02X}, stored 0x{:02X}", checksum, stored);
+        println!("Checksum mismatch: calculated 0x{:02X}, stored 0x{:02X}", checksum_value, stored);
     }
 
-    println!("Checksum: {:02X}", checksum);
+    println!("Checksum: {:02X}", checksum_value);
+
+    data[checksum_offset] = 0x69;
+
+    fs::write("data_modified.srm", &data)?;
+
+    println!("Saved modified file as data_modified.srm");
 
 
     Ok(())
+}
+
+fn calculate_checksum(data: &[u8], start: usize, end: usize) -> u8 {
+    let mut checksum: u8 = 0;
+
+    for byte in &data[start..=end] {
+        checksum = checksum.wrapping_add(*byte);
+    }
+    !checksum
+}
+
+fn validate_checksum(data: &[u8], calculated: u8, checksum_offset: usize) -> bool {
+    let stored_checksum = data[checksum_offset];
+    stored_checksum == calculated    
 }

@@ -143,7 +143,7 @@ pub fn _get_item_name(id: u8) -> &'static str {
         0xFC => "TM52",
         0xFD => "TM53",
         0xFE => "TM54",
-        0XFF => "TM55",
+        0xFF => "TM55",
         _ => "Invalid/Unknown Item"
     }
 

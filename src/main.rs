@@ -41,6 +41,20 @@ fn main() -> std::io::Result<()> {
     println!("Rival Name: {rival_name}");
 
 
+    
+
+    println!{"# of bag items: {}", save_file.bag_items_count()};
+
+    // Add 10 Pokeballs to first empty bag slot:
+    if !save_file.add_item_to_bag(0x04, 10) {
+        println!("Bag full. Unable to add item. Aborting.");
+    } else {
+        println!("Success. Added 10 pokeballs to first empty bag slot");
+    }
+
+    println!{"# of bag items: {}", save_file.bag_items_count()};
+
+    // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;
 
 

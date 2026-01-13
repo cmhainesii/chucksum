@@ -12,6 +12,12 @@ impl SaveFile {
     const GEN1_CHECKSUM_END: usize  = 0x3522;
     const GEN1_CHECKSUM_OFFSET: usize = 0x3523;
 
+    // Item list constants - GEN 1
+    const GEN1_BAG_OFFSET: usize = 0x25C9; // Beginning of Bag item list data.
+    const GEN1_MAX_BAG_ITEMS: usize = 20;
+    const _GEN1_MAX_PC_ITEMS: usize = 50;
+
+
     pub fn new(filename: &str) -> std::io::Result<Self> {
 
         let data = fs::read(filename)?;
@@ -30,6 +36,16 @@ impl SaveFile {
 
     pub fn write_byte(&mut self, offset: usize, value: u8) {
         self.data[offset] = value;
+    }
+
+    pub fn write_bytes(&mut self, offset: usize, data: &[u8] ) {
+        let end = offset + data.len();
+
+        if end > self.len() {
+            return;
+        }
+
+        self.data[offset..end].copy_from_slice(data);
     }
 
     pub fn _as_slice(&self) -> &[u8] {
@@ -83,4 +99,27 @@ impl SaveFile {
             self.write_byte(current_offset, terminator);
         }
     }
+
+    pub fn bag_items_count(&self) -> u8 {
+        self.read_byte(Self::GEN1_BAG_OFFSET).into()
+        
+    }
+
+    pub fn add_item_to_bag(&mut self, item_id: u8, qty: u8) -> bool {
+        let count = self.bag_items_count();
+
+        if count as usize >= Self::GEN1_MAX_BAG_ITEMS {
+            return false;
+        }
+
+        let next_free_bag_slot = (Self::GEN1_BAG_OFFSET + 1) + 2 * count as usize;
+        let item_data = [item_id, qty];
+        
+        self.write_bytes(next_free_bag_slot, &item_data);
+        self.write_byte(Self::GEN1_BAG_OFFSET, count + 1);
+        true
+                
+    }
+
+
 }

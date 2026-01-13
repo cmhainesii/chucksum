@@ -22,7 +22,7 @@ impl SaveFile {
         self.data[offset]
     }
 
-    pub fn read_bytes(&self, start: usize, end: usize) -> &[u8] {
+    pub fn _read_bytes(&self, start: usize, end: usize) -> &[u8] {
         &self.data[start..=end]
     }
 
@@ -30,7 +30,7 @@ impl SaveFile {
         self.data[offset] = value;
     }
 
-    pub fn as_slice(&self) -> &[u8] {
+    pub fn _as_slice(&self) -> &[u8] {
         &self.data
     }
 

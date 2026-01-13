@@ -1,9 +1,8 @@
-mod savefile;
+mod save_file;
 mod textencoding;
 
 
-
-use savefile::SaveFile;
+use save_file::SaveFile;
 
 
 
@@ -25,11 +24,23 @@ fn main() -> std::io::Result<()> {
     println!("0x{:04X}: 0x{:02X}", offset, value);
     println!();
 
+    let player_name = save_file.read_string(0x2598, 0x50);
+    println!("Player Name: {player_name}");
+
+    save_file.write_string("Jerome", 0x2598, 0x50);
+    let player_name = save_file.read_string(0x2598, 0x50);
+    println!("Player Name: {player_name}");
+
+    let rival_name = save_file.read_string(0x25F6, 0x50);
+    println!("Rival Name: {rival_name}");
+    let rival_name = "ASSHAT";
     
+    save_file.write_string(rival_name, 0x25F6, 0x50);
+    let rival_name = save_file.read_string(0x25F6, 0x50);
+    println!("Rival Name: {rival_name}");
+
 
     save_file.save("altered.srm")?;
-    // let checksum_value = calculate_checksum(&data, checksum_start, checksum_end);
-    // let checksum_validated = validate_checksum(&data, checksum_value, checksum_offset);
 
 
     Ok(())

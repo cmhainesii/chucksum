@@ -1,5 +1,6 @@
 mod save_file;
 mod textencoding;
+mod items;
 
 
 use save_file::SaveFile;
@@ -16,7 +17,7 @@ fn main() -> std::io::Result<()> {
     let value = save_file.read_byte(offset);
     println!("0x{:04X}: 0x{:02X}", offset, value);
 
-    save_file.write_byte(offset, 66);
+    //save_file.write_byte(offset, 66);
     
 
     let value = save_file.read_byte(offset);
@@ -40,7 +41,7 @@ fn main() -> std::io::Result<()> {
     println!("Rival Name: {rival_name}");
 
 
-    save_file.save("altered.srm")?;
+    save_file.save("pokemon red.sav")?;
 
 
     Ok(())

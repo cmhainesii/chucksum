@@ -46,9 +46,14 @@ fn main() -> std::io::Result<()> {
     println!{"# of bag items: {}", save_file.bag_items_count()};
     
     // Add 10 Pokeballs to first empty bag slot:
-    match save_file.add_item_to_bag(0x54, 10) {
+    match save_file.add_item_to_bag(0x01, 10) {
         Ok(_) => println!("Added item to bag successfully."),
         Err(e) => println!("Failed to add item: {e}"),
+    }
+
+    match save_file.add_item_to_bag(0x53, 96) {
+        Ok(_) => println!("Added second item to bag successfully"),
+        Err(e) => println!("Failed ot add item: {e}"),
     }
     
     println!{"# of bag items: {}", save_file.bag_items_count()};

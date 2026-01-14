@@ -1,9 +1,28 @@
-use std::fs;
+use std::{fs, thread::current};
 
-use crate::textencoding;
+use crate::{items, textencoding};
+
+
 
 pub struct SaveFile {
     data: Vec<u8>
+}
+
+#[derive(Debug)]
+pub enum BagError {
+    BagFull,
+    InvalidQuantity(u8),
+    InvalidItemId(u8),
+}
+
+impl std::fmt::Display for BagError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BagError::BagFull => write!(f, "The bag is full"),
+            BagError::InvalidQuantity(q) => write!(f, "Invalid Quantity: {}", q),
+            BagError::InvalidItemId(id) => write!(f, "Invalid item ID: 0x{:02X}", id),
+        }
+    }
 }
 
 impl SaveFile {
@@ -15,6 +34,7 @@ impl SaveFile {
     // Item list constants - GEN 1
     const GEN1_BAG_OFFSET: usize = 0x25C9; // Beginning of Bag item list data.
     const GEN1_MAX_BAG_ITEMS: usize = 20;
+    const GEN1_LIST_ITEM_SIZE: usize = 2;
     const _GEN1_MAX_PC_ITEMS: usize = 50;
 
 
@@ -105,20 +125,49 @@ impl SaveFile {
         
     }
 
-    pub fn add_item_to_bag(&mut self, item_id: u8, qty: u8) -> bool {
+    pub fn add_item_to_bag(&mut self, item_id: u8, qty: u8) -> Result<(), BagError> {
+        if qty == 0 {
+            return Err(BagError::InvalidQuantity(qty))
+        }
         let count = self.bag_items_count();
 
         if count as usize >= Self::GEN1_MAX_BAG_ITEMS {
-            return false;
+            return Err(BagError::BagFull);
         }
 
-        let next_free_bag_slot = (Self::GEN1_BAG_OFFSET + 1) + 2 * count as usize;
+        // Check if we have a valid item id. If not display an error and abort.
+        if !items::_is_valid_item(item_id) {
+            return Err(BagError::InvalidItemId(item_id));
+        }
+        let next_free_bag_slot = (Self::GEN1_BAG_OFFSET + 1) + Self::GEN1_LIST_ITEM_SIZE * count as usize;
         let item_data = [item_id, qty];
         
         self.write_bytes(next_free_bag_slot, &item_data);
         self.write_byte(Self::GEN1_BAG_OFFSET, count + 1);
-        true
+        Ok(())
                 
+    }
+
+    pub fn list_bag_items(&self) -> String {
+        let mut output = String::new();
+        let mut current_slot = 0;
+
+        if self.bag_items_count() > 0 {
+            let mut current_offset = Self::GEN1_BAG_OFFSET + 1;
+            let last_slot_offset = current_offset + (Self::GEN1_LIST_ITEM_SIZE * Self::GEN1_MAX_BAG_ITEMS);
+
+            while current_offset <= last_slot_offset && current_slot < self.bag_items_count()  {
+                let current_item = items::_get_item_name(self.read_byte(current_offset));
+                let item_qty = self.read_byte(current_offset + 1);
+
+                output.push_str(format!("{current_item} - Qty: {item_qty}\n").as_str());
+                
+                current_offset += 2;
+                current_slot += 1;
+            }
+            
+        }
+        output
     }
 
 

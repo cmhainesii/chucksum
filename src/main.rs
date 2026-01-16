@@ -5,6 +5,8 @@ mod items;
 
 use save_file::SaveFile;
 
+use crate::save_file::ItemStorage;
+
 
 
 fn main() -> std::io::Result<()> {
@@ -46,23 +48,35 @@ fn main() -> std::io::Result<()> {
     println!{"# of bag items: {}", save_file.bag_items_count()};
     
     // Add 10 Pokeballs to first empty bag slot:
-    match save_file.add_item_to_bag(0x01, 10) {
+    match save_file.add_item(ItemStorage::Bag, 0x01, 10) {
         Ok(_) => println!("Added item to bag successfully."),
         Err(e) => println!("Failed to add item: {e}"),
     }
 
-    match save_file.add_item_to_bag(0x53, 96) {
+    match save_file.add_item(ItemStorage::Bag, 0x53, 96) {
         Ok(_) => println!("Added second item to bag successfully"),
-        Err(e) => println!("Failed ot add item: {e}"),
+        Err(e) => println!("Failed to add item: {e}"),
     }
     
     println!{"# of bag items: {}", save_file.bag_items_count()};
     
     println!("Try listing bag items:\n\n");
-    println!("{}", save_file.list_bag_items());
+    println!("{}", save_file.list_items(ItemStorage::Bag));
+
+    // println!("Try printing box items: ");
+    // println!("{}", save_file.list_items(ItemStorage::PcBox));
+
+    // match save_file.add_item(ItemStorage::PcBox, 0x01, 98) {
+    //     Ok(_) => println!("Added item to box successfully."),
+    //     Err(e) => println!("Failed to add item: {e}")
+    // }
+    
+    // println!("{}", save_file.list_items(ItemStorage::PcBox));
     
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;
+
+    
     
     
     Ok(())

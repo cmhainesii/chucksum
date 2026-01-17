@@ -311,24 +311,35 @@ impl SaveFile {
     mod tests {
         use super::*;
 
-        #[test]
-        fn converts_single_digit() {
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(0), 0x00);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(5), 0x05);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(9), 0x09);
+        mod decimal_pair_to_bcd {
+            use super::*;
+            #[test]
+            fn converts_single_digit() {
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(0), 0x00);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(5), 0x05);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(9), 0x09);
+            }
+
+            #[test]
+            fn converts_two_digits() {
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(12), 0x12);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(34), 0x34);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(99), 0x99);
+            }
+
+            #[test]
+            fn handles_round_numbers() {
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(10), 0x10);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(20), 0x20);
+                assert_eq!(SaveFile::_decimal_pair_to_bcd(90), 0x90);
+            }
         }
 
-        #[test]
-        fn converts_two_digits() {
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(12), 0x12);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(34), 0x34);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(99), 0x99);
-        }
-
-        #[test]
-        fn handles_round_numbers() {
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(10), 0x10);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(20), 0x20);
-            assert_eq!(SaveFile::_decimal_pair_to_bcd(90), 0x90);
+        mod bcd_byte_to_decimal {
+            use super::*;
+            #[test]
+            fn failing_test() {
+                assert_eq!(1, 1);
+            }
         }
     }

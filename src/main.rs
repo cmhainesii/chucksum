@@ -3,6 +3,7 @@ mod textencoding;
 mod items;
 
 
+use numfmt::Formatter;
 use save_file::SaveFile;
 
 use crate::save_file::ItemStorage;
@@ -30,16 +31,17 @@ fn main() -> std::io::Result<()> {
     let player_name = save_file.read_string(0x2598, 0x50);
     println!("Player Name: {player_name}");
     
-    save_file.write_string("Jerome", 0x2598, 0x50);
-    let player_name = save_file.read_string(0x2598, 0x50);
+    //save_file.write_string("Jerome", 0x2598, 0x50);
+    save_file.set_player_name("Jerome");
+    let player_name = save_file.get_player_name();
     println!("Player Name: {player_name}");
     
-    let rival_name = save_file.read_string(0x25F6, 0x50);
+    let rival_name = save_file.get_rival_name();
     println!("Rival Name: {rival_name}");
-    let rival_name = "ASSHAT";
+    save_file.set_rival_name("ASSHAT");
     
-    save_file.write_string(rival_name, 0x25F6, 0x50);
-    let rival_name = save_file.read_string(0x25F6, 0x50);
+    
+    let rival_name = save_file.get_rival_name();
     println!("Rival Name: {rival_name}");
     
     
@@ -63,15 +65,21 @@ fn main() -> std::io::Result<()> {
     println!("Try listing bag items:\n\n");
     println!("{}", save_file.list_items(ItemStorage::Bag));
 
-    // println!("Try printing box items: ");
-    // println!("{}", save_file.list_items(ItemStorage::PcBox));
+    println!("Try printing box items: ");
+    println!("{}", save_file.list_items(ItemStorage::PcBox));
 
-    // match save_file.add_item(ItemStorage::PcBox, 0x01, 98) {
-    //     Ok(_) => println!("Added item to box successfully."),
-    //     Err(e) => println!("Failed to add item: {e}")
-    // }
+    match save_file.add_item(ItemStorage::PcBox, 0x01, 98) {
+        Ok(_) => println!("Added item to box successfully."),
+        Err(e) => println!("Failed to add item: {e}")
+    }
     
-    // println!("{}", save_file.list_items(ItemStorage::PcBox));
+    println!("{}", save_file.list_items(ItemStorage::PcBox));
+
+
+    let mut f: Formatter = "[n]".parse().unwrap();
+    println!("Money: ${}", f.fmt2(save_file.get_money()));
+
+    save_file.set_money(986_186);
     
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;

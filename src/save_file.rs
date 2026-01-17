@@ -42,6 +42,12 @@ impl SaveFile {
     const GEN1_CHECKSUM_START: usize = 0x2598;
     const GEN1_CHECKSUM_END: usize  = 0x3522;
     const GEN1_CHECKSUM_OFFSET: usize = 0x3523;
+    const GEN1_PLAERY_NAME_OFFSET: usize = 0x2598;
+    const GEN1_RIVAL_NAME_OFFSET: usize = 0x25F6;
+    const GEN1_MONEY_OFFSET: usize = 0x25F3;
+    const GEN1_MONEY_MAX: u32 = 999_999;
+    const GEN1_NAME_TERMINATOR: u8 = 0x50;
+    
     
     // Item list constants - GEN 1
     const GEN1_BAG_OFFSET: usize = 0x25C9; // Beginning of Bag item list data.
@@ -231,7 +237,98 @@ impl SaveFile {
             output
         }
 
+        pub fn set_player_name(&mut self, input: &str) {
+            self.write_string(input, Self::GEN1_PLAERY_NAME_OFFSET, 0x50);
+        }
+
+        pub fn get_player_name(&self) -> String {
+            self.read_string(Self::GEN1_PLAERY_NAME_OFFSET, 0x50)
+        }
+
+        pub fn set_rival_name(&mut self, input: &str) {
+            self.write_string(input, Self::GEN1_RIVAL_NAME_OFFSET, Self::GEN1_NAME_TERMINATOR);
+        }
+
+        pub fn get_rival_name(&self) -> String {
+            self.read_string(Self::GEN1_RIVAL_NAME_OFFSET, Self::GEN1_NAME_TERMINATOR)
+        }
+
+        fn _bcd_byte_to_decimal(byte: u8) -> u8 {
+            let high = (byte >> 4) & 0x0F;
+            let low = byte & 0x0F;
+            high * 10 + low
+        }
+
+        fn _decimal_pair_to_bcd(value: u8) -> u8 {
+            let tens = value / 10;
+            let ones = value % 10;
+
+            (tens << 4) | ones
+        }
+
+
+
+        pub fn get_money(&self) -> u32 {
+            let offset = Self::GEN1_MONEY_OFFSET;
+
+            let b1 = self.data[offset];
+            let b2 = self.data[offset + 1];
+            let b3 = self.data[offset + 2];
+
+            let d1 = Self::_bcd_byte_to_decimal(b1) as u32;
+            let d2 = Self::_bcd_byte_to_decimal(b2) as u32;
+            let d3 = Self::_bcd_byte_to_decimal(b3) as u32;
+
+            d1 * 10_000 + d2 * 100 + d3
+        }
+
+        fn _money_to_bcd_bytes(mut money: u32) -> [u8; 3] {
+            // Cap to Gen 1 max
+            money = money.min(Self::GEN1_MONEY_MAX);
+
+            let hundred_thousands = (money / 100_000) as u8;
+            let ten_thousands = ((money / 10_000) % 10) as u8;
+            let thousands = ((money / 1000) % 10) as u8;
+            let hundreds = ((money / 100) % 10) as u8;
+            let tens = ((money / 10) % 10) as u8;
+            let ones = (money % 10) as u8;
+
+            [
+                (hundred_thousands << 4) | ten_thousands,
+                (thousands << 4) | hundreds,
+                (tens << 4) | ones,
+            ]
+        }
+
+        pub fn set_money(&mut self, money: u32) {
+            let bytes = Self::_money_to_bcd_bytes(money);
+            self.write_bytes(Self::GEN1_MONEY_OFFSET, &bytes);
+        }
         
-        
-        
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn converts_single_digit() {
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(0), 0x00);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(5), 0x05);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(9), 0x09);
+        }
+
+        #[test]
+        fn converts_two_digits() {
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(12), 0x12);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(34), 0x34);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(99), 0x99);
+        }
+
+        #[test]
+        fn handles_round_numbers() {
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(10), 0x10);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(20), 0x20);
+            assert_eq!(SaveFile::_decimal_pair_to_bcd(90), 0x90);
+        }
     }

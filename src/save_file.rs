@@ -333,13 +333,19 @@ impl SaveFile {
                 assert_eq!(SaveFile::_decimal_pair_to_bcd(20), 0x20);
                 assert_eq!(SaveFile::_decimal_pair_to_bcd(90), 0x90);
             }
-        }
 
         mod bcd_byte_to_decimal {
             use super::*;
+            // _bcd_byte_to_decimal tests:
             #[test]
-            fn failing_test() {
-                assert_eq!(1, 1);
+            fn test_bcd_byte_to_decimal() {
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x00), 0);
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x05), 5);
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x10), 10);
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x20), 20);
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x55), 55);
+                assert_eq!(SaveFile::_bcd_byte_to_decimal(0x99), 99);
             }
         }
     }
+}

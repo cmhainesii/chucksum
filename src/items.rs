@@ -1,6 +1,6 @@
 const INVALID_ITEM_NAME: &str = "Invalid/Unknown Item";
 
-pub fn _get_item_name(id: u8) -> &'static str {
+pub fn get_item_name(id: u8) -> &'static str {
     
 
     match id {
@@ -149,11 +149,11 @@ pub fn _get_item_name(id: u8) -> &'static str {
         0xFD => "TM53",
         0xFE => "TM54",
         0xFF => "TM55",
-        _ => "Invalid/Unknown Item"
+        _ => INVALID_ITEM_NAME,
     }
 
 }
 
 pub fn _is_valid_item(id: u8) -> bool {
-    _get_item_name(id) != INVALID_ITEM_NAME
+    get_item_name(id) != INVALID_ITEM_NAME
 }

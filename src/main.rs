@@ -1,6 +1,7 @@
 mod save_file;
 mod textencoding;
 mod items;
+mod species;
 
 
 use numfmt::Formatter;
@@ -80,6 +81,17 @@ fn main() -> std::io::Result<()> {
     println!("Money: ${}", f.fmt2(save_file.get_money()));
 
     save_file.set_money(986_186);
+
+    // Print out party species names.
+    match save_file.get_party_species_names() {
+        Ok(names) => {
+            for name in names {
+                println!("{name}");
+            }
+        }
+        Err(e) => println!("Lookup error: {e}")
+    }
+    
     
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;

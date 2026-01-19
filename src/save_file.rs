@@ -1,6 +1,8 @@
 use std::fs;
 
-use crate::{items, textencoding};
+use crate::items;
+use crate::textencoding;
+use crate::species;
 
 
 
@@ -13,6 +15,11 @@ pub enum BagError {
     BagFull,
     InvalidQuantity(u8),
     InvalidItemId(u8),
+}
+
+#[derive(Debug)]
+pub enum PartyError {
+    LookupError
 }
 
 pub enum ItemStorage {
@@ -33,6 +40,14 @@ impl std::fmt::Display for BagError {
             BagError::BagFull => write!(f, "The bag is full"),
             BagError::InvalidQuantity(q) => write!(f, "Invalid Quantity: {}", q),
             BagError::InvalidItemId(id) => write!(f, "Invalid item ID: 0x{:02X}", id),
+        }
+    }
+}
+
+impl std::fmt::Display for PartyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PartyError::LookupError => write!(f, "Party data is corrupted")
         }
     }
 }
@@ -60,6 +75,14 @@ impl SaveFile {
     // Item box constants
     const GEN1_MAX_BOX_ITEMS: usize = 50;
     const GEN1_BOX_ITEMS_OFFSET: usize = 0x27E6;
+
+    // Party related constants
+    const GEN1_PARTY_DATA_OFFSET: usize = 0x2F2C; // Beginning of party data. Party count
+    const _GEN1_MAX_PARTY_SIZE: usize = 6;
+    const GEN1_PARTY_SPECIES_LIST_OFFSET: usize = 1; // Add this to party data offset to get first species in species list.
+    const _GEN1_PARTY_LIST_TERMINATOR: u8 = 0xFF;
+    const _GEN1_PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to get to first party pokemon
+
     
     
     pub fn new(filename: &str) -> std::io::Result<Self> {
@@ -224,7 +247,7 @@ impl SaveFile {
                 let last_slot_offset = current_offset + (Self::GEN1_LIST_ITEM_SIZE * dest_offsets.max_items);
                 
                 while current_offset <= last_slot_offset && current_slot < dest_offsets.count  {
-                    let current_item = items::_get_item_name(self.read_byte(current_offset));
+                    let current_item = items::get_item_name(self.read_byte(current_offset));
                     let item_qty = self.read_byte(current_offset + 1);
                     
                     output.push_str(format!("{current_item} - Qty: {item_qty}\n").as_str());
@@ -303,6 +326,25 @@ impl SaveFile {
         pub fn set_money(&mut self, money: u32) {
             let bytes = Self::_money_to_bcd_bytes(money);
             self.write_bytes(Self::GEN1_MONEY_OFFSET, &bytes);
+        }
+
+        pub fn get_party_species_names(&self) -> Result<Vec<&'static str>, PartyError> {
+
+            let count = self.read_byte(Self::GEN1_PARTY_DATA_OFFSET);
+            if count <= 0 || count > 6 {
+                return Err(PartyError::LookupError);
+            }
+            let mut species_names: Vec<&'static str> = Vec::new();
+            let count = self.read_byte(Self::GEN1_PARTY_DATA_OFFSET);
+            let current_offset = Self::GEN1_PARTY_DATA_OFFSET + Self::GEN1_PARTY_SPECIES_LIST_OFFSET;
+            for i in 0..count as usize {
+                let species_id = self.read_byte(current_offset + i);
+                species_names.push(species::get_species_name(species_id));
+            }
+            if species_names.len() == 0 || species_names.len() > 6 {
+                return Err(PartyError::LookupError);
+            }
+            Ok(species_names)
         }
         
     }

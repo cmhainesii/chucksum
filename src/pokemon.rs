@@ -1,3 +1,6 @@
+use crate::save_file::SaveFile;
+
+
 pub struct Pokemon {
     pub species_id: u8,
     pub current_hp: u16,
@@ -17,9 +20,46 @@ pub struct Pokemon {
     pub defense_stat_exp: u16,
     pub speed_stat_exp: u16,
     pub special_stat_exp: u16,
+    pub attack_iv: u8,
+    pub defense_iv: u8,
+    pub speed_iv: u8,
+    pub special_iv: u8,
 }
 
 impl Pokemon {
+
+    // All adition below will be rooting from this first offset. Begin of first party pokemon data.
+    pub const FIRST_PKMN_OFFSET: usize = SaveFile::GEN1_PARTY_DATA_OFFSET + SaveFile::_GEN1_PARTY_START_TO_FIRST;
+
+    // All of these constants can be added to the current pokemon's offset 
+    // to locate the various data within the games pokemon data structure.
+    // Example: (FIRST_PKMN_OFFSET + SPECIES_ID) yields the byte holding the species
+    // id for the first party pokemon.
+    pub const SPECIES_ID: usize = 0x00;
+    pub const CURRENT_HP: usize = 0x01;
+    pub const LEVEL: usize = 0x03;
+    pub const STATUS: usize = 0x04;
+    pub const TYPE_1: usize = 0x05;
+    pub const TYPE_2: usize = 0x06;
+    pub const CATCH_RATE: usize = 0x07;
+    pub const MOVE_INDEX_1: usize = 0x08;
+    pub const MOVE_INDEX_2: usize = 0x09;
+    pub const MOVE_INDEX_3: usize = 0x0A;
+    pub const MOVE_INDEX_4: usize = 0x0B;
+    pub const OT_ID: usize = 0x0C;
+    pub const EXPERIENCE_PTS: usize = 0x0E;
+    pub const HP_STAT_EXP: usize = 0x11;
+    pub const ATTACK_STAT_EXP: usize = 0x13;
+    pub const DEFENSE_STAT_EXP: usize = 0x15;
+    pub const SPEED_STAT_EXP: usize = 0x17;
+    pub const SPECIAL_STAT_EXP: usize = 0x19;
+    pub const IV_1: usize = 0x1B;
+    pub const IV_2: usize = 0x1C;
+
+    
+
+    
+    
     // Function to map pokemon species to ids
     pub fn get_species_name(id: u8) -> &'static str {
 

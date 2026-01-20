@@ -96,7 +96,7 @@ fn main() -> std::io::Result<()> {
     
     println!();
     println!("-------------------");
-    println!("Party Pokkemon Data");
+    println!("Party Pokémon Data");
     println!("-------------------");
     println!();
 
@@ -116,11 +116,15 @@ fn main() -> std::io::Result<()> {
                 println!("     Move 4 Index: {}", pokemon.move_index4);
                 println!("            OT ID: {}", pokemon.ot_id);
                 println!("Experience Points: {}", pokemon.experience_pts);
-                println!("     HP Stat Exp: {}", pokemon.hp_stat_exp);
-                println!(" Attack Stat Exp: {}", pokemon.attack_stat_exp);
-                println!("Defense Stat Exp: {}", pokemon.defense_stat_exp);
-                println!("  Speed Stat Exp: {}", pokemon.speed_stat_exp);
-                println!("Special Stat Exp: {}\n", pokemon.special_stat_exp);
+                println!("      HP Stat Exp: {}", pokemon.hp_stat_exp);
+                println!("  Attack Stat Exp: {}", pokemon.attack_stat_exp);
+                println!(" Defense Stat Exp: {}", pokemon.defense_stat_exp);
+                println!("   Speed Stat Exp: {}", pokemon.speed_stat_exp);
+                println!(" Special Stat Exp: {}", pokemon.special_stat_exp);
+                println!("        Attack IV: {}", pokemon.attack_iv);
+                println!("       Defense IV: {}", pokemon.defense_iv);
+                println!("         Speed IV: {}", pokemon.speed_iv);
+                println!("       Special IV: {}\n", pokemon.special_iv)
                 
             }
         },

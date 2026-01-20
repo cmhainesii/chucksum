@@ -1,8 +1,8 @@
 use std::fs;
 
 use crate::items;
+use crate::pokemon::Pokemon;
 use crate::textencoding;
-use crate::species;
 
 
 
@@ -97,7 +97,7 @@ impl SaveFile {
         self.data[offset]
     }
     
-    pub fn _read_bytes(&self, start: usize, end: usize) -> &[u8] {
+    pub fn read_bytes(&self, start: usize, end: usize) -> &[u8] {
         &self.data[start..=end]
     }
     
@@ -339,13 +339,75 @@ impl SaveFile {
             let current_offset = Self::GEN1_PARTY_DATA_OFFSET + Self::GEN1_PARTY_SPECIES_LIST_OFFSET;
             for i in 0..count as usize {
                 let species_id = self.read_byte(current_offset + i);
-                species_names.push(species::get_species_name(species_id));
+                species_names.push(Pokemon::get_species_name(species_id));
             }
             if species_names.len() == 0 || species_names.len() > 6 {
                 return Err(PartyError::LookupError);
             }
             Ok(species_names)
         }
+
+        pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
+            let mut current_offset = Self::GEN1_PARTY_DATA_OFFSET + Self::_GEN1_PARTY_START_TO_FIRST;
+            let mut pokemon_list = Vec::new();
+            let count = self.read_byte(Self::GEN1_PARTY_DATA_OFFSET);
+            if count > 6 || count <= 0 {
+                return Err(PartyError::LookupError);
+            }           
+            
+            for _ in 0..count {
+                let ot_id_sl = self.read_bytes(current_offset + 0x0C, current_offset + 0x0D);
+                let current_hp_sl = self.read_bytes(current_offset + 1, current_offset + 2);
+                let experience_pts_sl = self.read_bytes(current_offset + 0x0E, current_offset + 0x10);
+                
+                let hp_stat_exp_sl = self.read_bytes(current_offset + 0x11, current_offset + 0x12);
+                let attack_stat_exp_sl = self.read_bytes(current_offset + 0x13, current_offset + 0x14);
+                let defense_stat_exp_sl = self.read_bytes(current_offset + 0x15, current_offset + 0x16);
+                let speed_stat_exp_sl = self.read_bytes(current_offset + 0x17, current_offset + 0x18);
+                let special_stat_exp_sl = self.read_bytes(current_offset + 0x19, current_offset + 0x1A);
+
+                if ot_id_sl.len() != 2 || current_hp_sl.len() != 2 || experience_pts_sl.len() != 3 {
+                    return Err(PartyError::LookupError);
+                }
+
+                // Convert 2 u8 bytes into u16
+                let ot_id = u16::from_be_bytes([ot_id_sl[0], ot_id_sl[1]]);
+                let current_hp = u16::from_be_bytes([current_hp_sl[0], current_hp_sl[1]]);
+
+                // Convert 3 u8 bytes to u32
+                let experience_pts = ((experience_pts_sl[0] as u32) << 16) |
+                                    ((experience_pts_sl[1] as u32) << 8) |
+                                    (experience_pts_sl[2] as u32);
+                
+                let pokemon = Pokemon {
+                    species_id: self.read_byte(current_offset),
+                    current_hp,
+                    level: self.read_byte(current_offset + 0x03),
+                    status: self.read_byte(current_offset + 0x04),
+                    pkmn_type_1: self.read_byte(current_offset + 0x05),
+                    pkmn_type_2: self.read_byte(current_offset + 0x06),
+                    catch_rate: self.read_byte(current_offset + 0x07),
+                    move_index1: self.read_byte(current_offset + 0x08),
+                    move_index2: self.read_byte(current_offset + 0x09),
+                    move_index3: self.read_byte(current_offset + 0x0A),
+                    move_index4: self.read_byte(current_offset + 0x0B),
+                    ot_id,
+                    experience_pts,
+                    hp_stat_exp: u16::from_le_bytes([hp_stat_exp_sl[0], hp_stat_exp_sl[1]]),  
+                    attack_stat_exp: u16::from_le_bytes([attack_stat_exp_sl[0], attack_stat_exp_sl[1]]),
+                    defense_stat_exp: u16::from_le_bytes([defense_stat_exp_sl[0], defense_stat_exp_sl[1]]),
+                    speed_stat_exp: u16::from_le_bytes([speed_stat_exp_sl[0], speed_stat_exp_sl[1]]),
+                    special_stat_exp: u16::from_le_bytes([special_stat_exp_sl[0], special_stat_exp_sl[1]])
+                };
+
+                current_offset += 0x2C;
+                pokemon_list.push(pokemon);
+            }
+            Ok(pokemon_list)
+
+
+        }
+
         
     }
 

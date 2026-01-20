@@ -1,11 +1,13 @@
 mod save_file;
 mod textencoding;
 mod items;
-mod species;
+mod pokemon;
 
 
 use numfmt::Formatter;
 use save_file::SaveFile;
+use pokemon::Pokemon;
+
 
 use crate::save_file::ItemStorage;
 
@@ -92,6 +94,40 @@ fn main() -> std::io::Result<()> {
         Err(e) => println!("Lookup error: {e}")
     }
     
+    println!();
+    println!("-------------------");
+    println!("Party Pokkemon Data");
+    println!("-------------------");
+    println!();
+
+    match save_file.get_party_pokemon_data() {
+        Ok(pokemon_list) => {
+            for pokemon in pokemon_list {
+                println!("          Species: {}", Pokemon::get_species_name(pokemon.species_id));
+                println!("       Current HP: {}", pokemon.current_hp);
+                println!("            Level: {}", pokemon.level);
+                println!("           Status: {}", pokemon.status);
+                println!("             Type: 0x{:X}", pokemon.pkmn_type_1);
+                println!("            Type2: {}", pokemon.pkmn_type_2);
+                println!("       Catch Rate: {}", pokemon.catch_rate);
+                println!("     Move 1 Index: {}", pokemon.move_index1);
+                println!("     Move 2 Index: {}", pokemon.move_index2);
+                println!("     Move 3 Index: {}", pokemon.move_index3);
+                println!("     Move 4 Index: {}", pokemon.move_index4);
+                println!("            OT ID: {}", pokemon.ot_id);
+                println!("Experience Points: {}", pokemon.experience_pts);
+                println!("     HP Stat Exp: {}", pokemon.hp_stat_exp);
+                println!(" Attack Stat Exp: {}", pokemon.attack_stat_exp);
+                println!("Defense Stat Exp: {}", pokemon.defense_stat_exp);
+                println!("  Speed Stat Exp: {}", pokemon.speed_stat_exp);
+                println!("Special Stat Exp: {}\n", pokemon.special_stat_exp);
+                
+            }
+        },
+        Err(e) => println!("Lookup error: {e}")
+    }
+
+
     
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;

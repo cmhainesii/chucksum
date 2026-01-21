@@ -4,7 +4,8 @@ mod items;
 mod pokemon;
 
 
-use numfmt::Formatter;
+use num_format::Locale;
+use num_format::ToFormattedString;
 use save_file::SaveFile;
 use pokemon::Pokemon;
 
@@ -79,8 +80,9 @@ fn main() -> std::io::Result<()> {
     println!("{}", save_file.list_items(ItemStorage::PcBox));
 
 
-    let mut f: Formatter = "[n]".parse().unwrap();
-    println!("Money: ${}", f.fmt2(save_file.get_money()));
+
+    
+    println!("Money: ${}", save_file.get_money().to_formatted_string(&Locale::en));
 
     save_file.set_money(986_186);
 
@@ -114,13 +116,13 @@ fn main() -> std::io::Result<()> {
                 println!("           Move 2: {}", Pokemon::get_move_name(pokemon.move_index2));
                 println!("           Move 3: {}", Pokemon::get_move_name(pokemon.move_index3));
                 println!("           Move 4: {}", Pokemon::get_move_name(pokemon.move_index4));
-                println!("            OT ID: {}", pokemon.ot_id);
-                println!("Experience Points: {}", pokemon.experience_pts);
-                println!("      HP Stat Exp: {}", pokemon.hp_stat_exp);
-                println!("  Attack Stat Exp: {}", pokemon.attack_stat_exp);
-                println!(" Defense Stat Exp: {}", pokemon.defense_stat_exp);
-                println!("   Speed Stat Exp: {}", pokemon.speed_stat_exp);
-                println!(" Special Stat Exp: {}", pokemon.special_stat_exp);
+                println!("            OT ID: {}", pokemon.ot_id); 
+                println!("Experience Points: {}", pokemon.experience_pts.to_formatted_string(&Locale::en));
+                println!("      HP Stat Exp: {}", pokemon.hp_stat_exp.to_formatted_string(&Locale::en));
+                println!("  Attack Stat Exp: {}", pokemon.attack_stat_exp.to_formatted_string(&Locale::en));
+                println!(" Defense Stat Exp: {}", pokemon.defense_stat_exp.to_formatted_string(&Locale::en));
+                println!("   Speed Stat Exp: {}", pokemon.speed_stat_exp.to_formatted_string(&Locale::en));
+                println!(" Special Stat Exp: {}", pokemon.special_stat_exp.to_formatted_string(&Locale::en));
                 println!("        Attack IV: {}", pokemon.attack_iv);
                 println!("       Defense IV: {}", pokemon.defense_iv);
                 println!("         Speed IV: {}", pokemon.speed_iv);

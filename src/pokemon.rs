@@ -5,7 +5,7 @@ use crate::save_file::SaveFile;
 
 
 fn get_high_nibble(b: u8) -> u8 {
-    (b << 4) & 0x0F
+    (b >> 4) & 0x0F
 }
 
 fn get_low_nibble(b: u8) -> u8 {
@@ -395,7 +395,7 @@ impl Pokemon {
 
     pub fn get_move_name(id: u8) -> &'static str {
         match id {
-            0   => "",
+            0   => "<None>",
             1   => "Pound",
             2   => "Karate Chop",
             3   => "Double Slap",

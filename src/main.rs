@@ -9,7 +9,7 @@ use save_file::SaveFile;
 use pokemon::Pokemon;
 
 
-use crate::save_file::ItemStorage;
+use crate::{pokemon::StatusCondtion, save_file::ItemStorage};
 
 
 
@@ -106,14 +106,14 @@ fn main() -> std::io::Result<()> {
                 println!("          Species: {}", Pokemon::get_species_name(pokemon.species_id));
                 println!("       Current HP: {}", pokemon.current_hp);
                 println!("            Level: {}", pokemon.level);
-                println!("           Status: {}", pokemon.status);
-                println!("             Type: 0x{:X}", pokemon.pkmn_type_1);
-                println!("            Type2: {}", pokemon.pkmn_type_2);
+                println!("           Status: {}", StatusCondtion::from_byte(pokemon.status));
+                println!("             Type: {}", Pokemon::get_type_name(pokemon.pkmn_type_1));
+                println!("            Type2: {}", Pokemon::get_type_name(pokemon.pkmn_type_2));
                 println!("       Catch Rate: {}", pokemon.catch_rate);
-                println!("     Move 1 Index: {}", pokemon.move_index1);
-                println!("     Move 2 Index: {}", pokemon.move_index2);
-                println!("     Move 3 Index: {}", pokemon.move_index3);
-                println!("     Move 4 Index: {}", pokemon.move_index4);
+                println!("           Move 1: {}", Pokemon::get_move_name(pokemon.move_index1));
+                println!("           Move 2: {}", Pokemon::get_move_name(pokemon.move_index2));
+                println!("           Move 3: {}", Pokemon::get_move_name(pokemon.move_index3));
+                println!("           Move 4: {}", Pokemon::get_move_name(pokemon.move_index4));
                 println!("            OT ID: {}", pokemon.ot_id);
                 println!("Experience Points: {}", pokemon.experience_pts);
                 println!("      HP Stat Exp: {}", pokemon.hp_stat_exp);

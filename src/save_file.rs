@@ -1,7 +1,7 @@
 use std::fs;
 
 use crate::items;
-use crate::pokemon::Pokemon;
+use crate::pokemon::{Pokemon, PokemonRaw};
 use crate::textencoding;
 
 
@@ -97,7 +97,7 @@ impl SaveFile {
         self.data[offset]
     }
     
-    pub fn read_bytes(&self, start: usize, end: usize) -> &[u8] {
+    pub fn _read_bytes(&self, start: usize, end: usize) -> &[u8] {
         &self.data[start..=end]
     }
     
@@ -347,78 +347,105 @@ impl SaveFile {
             Ok(species_names)
         }
 
-        pub fn get_party_count(&self) -> u8 {
-            self.read_byte(Self::GEN1_PARTY_DATA_OFFSET)
+        pub fn get_party_count(&self) -> usize {
+            self.read_byte(Self::GEN1_PARTY_DATA_OFFSET) as usize
         }
 
         pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
-            let mut current_pkmn = Pokemon::FIRST_PKMN_OFFSET;
-            let mut pokemon_list = Vec::new();
             let count = self.get_party_count();
-            if count > 6 || count <= 0 {
-                return Err(PartyError::LookupError);
-            }           
             
+            if count <= 0 || count > 6 {
+                return Err(PartyError::LookupError);
+            }
+
+            let mut offset = Pokemon::FIRST_PKMN_OFFSET;
+            let mut list = Vec::new();
+
             for _ in 0..count {
+                let raw = self.read_pokemon_raw(offset);
+                let pokemon = Pokemon::from_raw(raw);
+                list.push(pokemon);
+                offset += Pokemon::NEXT_PARTY_PKMN;
+            }
+
+            Ok(list)
+        }
+
+        // pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
+        //     let mut current_pkmn = Pokemon::FIRST_PKMN_OFFSET;
+        //     let mut pokemon_list = Vec::new();
+        //     let count = self.get_party_count();
+        //     if count > 6 || count <= 0 {
+        //         return Err(PartyError::LookupError);
+        //     }           
+            
+        //     for _ in 0..count {
 
                 
-                let pokemon = Pokemon {
-                    species_id: self.read_byte(current_pkmn + Pokemon::SPECIES_ID),
-                    current_hp: self.read_u16_be(current_pkmn + Pokemon::CURRENT_HP),
-                    level: self.read_byte(current_pkmn + Pokemon::LEVEL),
-                    status: self.read_byte(current_pkmn + Pokemon::STATUS),
-                    pkmn_type_1: self.read_byte(current_pkmn + Pokemon::TYPE_1),
-                    pkmn_type_2: self.read_byte(current_pkmn + Pokemon::TYPE_2),
-                    catch_rate: self.read_byte(current_pkmn + Pokemon::CATCH_RATE),
-                    move_index1: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_1),
-                    move_index2: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_2),
-                    move_index3: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_3),
-                    move_index4: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_4),
-                    ot_id: self.read_u16_be(current_pkmn + Pokemon::OT_ID),
-                    experience_pts: self.read_u24_be(current_pkmn + Pokemon::EXPERIENCE_PTS),
-                    hp_stat_exp: self.read_u16_le(current_pkmn + Pokemon::HP_STAT_EXP),
-                    attack_stat_exp: self.read_u16_le(current_pkmn + Pokemon::ATTACK_STAT_EXP),
-                    defense_stat_exp: self.read_u16_le(current_pkmn + Pokemon::DEFENSE_STAT_EXP),
-                    speed_stat_exp: self.read_u16_le(current_pkmn + Pokemon::SPEED_STAT_EXP),
-                    special_stat_exp: self.read_u16_le(current_pkmn + Pokemon::SPECIAL_STAT_EXP),
-                    attack_iv: self.read_u8_high(current_pkmn + Pokemon::IV_1),
-                    defense_iv: self.read_u8_low(current_pkmn + Pokemon::IV_1),
-                    speed_iv: self.read_u8_high(current_pkmn + Pokemon::IV_2),
-                    special_iv: self.read_u8_low(current_pkmn + Pokemon::IV_2),
-                };
+        //         let pokemon = Pokemon {
+        //             species_id: self.read_byte(current_pkmn + Pokemon::SPECIES_ID),
+        //             current_hp: self.read_u16_be(current_pkmn + Pokemon::CURRENT_HP),
+        //             level: self.read_byte(current_pkmn + Pokemon::LEVEL),
+        //             status: self.read_byte(current_pkmn + Pokemon::STATUS),
+        //             pkmn_type_1: self.read_byte(current_pkmn + Pokemon::TYPE_1),
+        //             pkmn_type_2: self.read_byte(current_pkmn + Pokemon::TYPE_2),
+        //             catch_rate: self.read_byte(current_pkmn + Pokemon::CATCH_RATE),
+        //             move_index1: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_1),
+        //             move_index2: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_2),
+        //             move_index3: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_3),
+        //             move_index4: self.read_byte(current_pkmn + Pokemon::MOVE_INDEX_4),
+        //             ot_id: self.read_u16_be(current_pkmn + Pokemon::OT_ID),
+        //             experience_pts: self.read_u24_be(current_pkmn + Pokemon::EXPERIENCE_PTS),
+        //             hp_stat_exp: self.read_u16_le(current_pkmn + Pokemon::HP_STAT_EXP),
+        //             attack_stat_exp: self.read_u16_le(current_pkmn + Pokemon::ATTACK_STAT_EXP),
+        //             defense_stat_exp: self.read_u16_le(current_pkmn + Pokemon::DEFENSE_STAT_EXP),
+        //             speed_stat_exp: self.read_u16_le(current_pkmn + Pokemon::SPEED_STAT_EXP),
+        //             special_stat_exp: self.read_u16_le(current_pkmn + Pokemon::SPECIAL_STAT_EXP),
+        //             attack_iv: self.read_u8_high(current_pkmn + Pokemon::IV_1),
+        //             defense_iv: self.read_u8_low(current_pkmn + Pokemon::IV_1),
+        //             speed_iv: self.read_u8_high(current_pkmn + Pokemon::IV_2),
+        //             special_iv: self.read_u8_low(current_pkmn + Pokemon::IV_2),
+        //         };
 
-                current_pkmn += 0x2C;
-                pokemon_list.push(pokemon);
-            }
-            Ok(pokemon_list)
+        //         current_pkmn += 0x2C;
+        //         pokemon_list.push(pokemon);
+        //     }
+        //     Ok(pokemon_list)
 
 
+        // }
+
+        // fn read_u16_be(&self, offset: usize) -> u16 {
+        //     let b = self.read_bytes(offset, offset + 1);
+        //     u16::from_be_bytes([b[0], b[1]])
+        // }
+
+        // fn read_u16_le(&self, offset: usize) -> u16 {
+        //     let b = self.read_bytes(offset, offset + 1);
+        //     u16::from_le_bytes([b[0], b[1]])
+        // }
+
+        // fn read_u24_be(&self, offset: usize) -> u32 {
+        //     let b = self.read_bytes(offset, offset + 2);
+        //     ((b[0] as u32) << 16) | ((b[1] as u32) << 8) | b[2] as u32
+        // }
+
+        // fn read_u8_high(&self, offset: usize) -> u8 {
+        //     let b = self.read_byte(offset);
+        //     (b >> 4) & 0x0F
+        // }
+
+        // fn read_u8_low(&self, offset: usize) -> u8 {
+        //     let b = self.read_byte(offset);
+        //     b & 0x0F
+        // }
+
+        pub fn read_pokemon_raw(&self, offset: usize) -> PokemonRaw {
+            let mut data = [0u8; 0x2C];
+            data.copy_from_slice(&self.data[offset..offset + 0x2C]);
+            PokemonRaw::new(data)
         }
 
-        fn read_u16_be(&self, offset: usize) -> u16 {
-            let b = self.read_bytes(offset, offset + 1);
-            u16::from_be_bytes([b[0], b[1]])
-        }
-
-        fn read_u16_le(&self, offset: usize) -> u16 {
-            let b = self.read_bytes(offset, offset + 1);
-            u16::from_le_bytes([b[0], b[1]])
-        }
-
-        fn read_u24_be(&self, offset: usize) -> u32 {
-            let b = self.read_bytes(offset, offset + 2);
-            ((b[0] as u32) << 16) | ((b[1] as u32) << 8) | b[2] as u32
-        }
-
-        fn read_u8_high(&self, offset: usize) -> u8 {
-            let b = self.read_byte(offset);
-            (b >> 4) & 0x0F
-        }
-
-        fn read_u8_low(&self, offset: usize) -> u8 {
-            let b = self.read_byte(offset);
-            b & 0x0F
-        }
 
         
     }

@@ -1,6 +1,16 @@
+use core::fmt;
+
 use crate::save_file::SaveFile;
 
 
+
+fn get_high_nibble(b: u8) -> u8 {
+    (b << 4) & 0x0F
+}
+
+fn get_low_nibble(b: u8) -> u8 {
+    b & 0x0F
+}
 pub struct Pokemon {
     pub species_id: u8,
     pub current_hp: u16,
@@ -24,6 +34,73 @@ pub struct Pokemon {
     pub defense_iv: u8,
     pub speed_iv: u8,
     pub special_iv: u8,
+}
+
+pub struct PokemonRaw {
+    data: [u8; Pokemon::NEXT_PARTY_PKMN]
+}
+
+impl PokemonRaw {
+
+    pub fn new(data: [u8; Pokemon::NEXT_PARTY_PKMN]) -> Self {
+        PokemonRaw { data }
+    }
+
+    fn byte(&self, offset: usize) -> u8 {
+        return self.data[offset]
+    }
+
+    fn u16_be(&self, offset: usize) -> u16 {
+        u16::from_be_bytes([self.data[offset], self.data[offset + 1]])
+    }
+
+    fn u16_le(&self, offset: usize) -> u16 {
+        u16::from_le_bytes([self.data[offset], self.data[offset + 1]])
+    }
+
+    fn u24_be(&self, offset: usize) -> u32 {
+        ((self.data[offset] as u32) << 16)
+            | ((self.data[offset+1] as u32) << 8)
+            | self.data[offset + 2] as u32
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum StatusCondtion {
+    None,
+    Asleep,
+    Poisoned,
+    Burned,
+    Frozen,
+    Paralyzed,
+}
+
+impl fmt::Display for StatusCondtion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            StatusCondtion::None => "None",
+            StatusCondtion::Asleep => "Asleep",
+            StatusCondtion::Poisoned => "Poisoned",
+            StatusCondtion::Burned => "Burned",
+            StatusCondtion::Frozen => "Frozen",
+            StatusCondtion::Paralyzed => "Paralyzed",
+        };
+
+        write!(f, "{s}")
+    }
+}
+
+impl StatusCondtion {
+    pub fn from_byte(value: u8) -> Self {
+        match value {
+            0x04 => StatusCondtion::Asleep,
+            0x08 => StatusCondtion::Poisoned,
+            0x10 => StatusCondtion::Burned,
+            0x20 => StatusCondtion::Frozen,
+            0x40 => StatusCondtion::Paralyzed,
+            _ => StatusCondtion::None,
+        }
+    }
 }
 
 impl Pokemon {
@@ -55,10 +132,66 @@ impl Pokemon {
     pub const SPECIAL_STAT_EXP: usize = 0x19;
     pub const IV_1: usize = 0x1B;
     pub const IV_2: usize = 0x1C;
+    pub const NEXT_PARTY_PKMN: usize = 0x2C;
 
-    
+    pub fn get_type_name(pkmn_type: u8) -> &'static str {
+        match pkmn_type {
+            0  => "Normal",
+            1  => "Fighting",
+            2  => "Flying",
+            3  => "Poison",
+            4  => "Ground",
+            5  => "Rock",
+            7  => "Bug",
+            8  => "Ghost",
+            20 => "Fire",
+            21 => "Water",
+            22 => "Grass",
+            23 => "Electric",
+            24 => "Psychic",
+            25 => "Ice",
+            26 => "Dragon",
+            _  => "Invalid/Unknown"
+        }
+    }
 
-    
+
+
+
+
+
+    pub fn from_raw(raw: PokemonRaw) -> Pokemon {
+        let iv1 = raw.byte(Pokemon::IV_1);
+        let iv2 = raw.byte(Pokemon::IV_2);
+
+        let attack_iv = get_high_nibble(iv1);
+        let defense_iv = get_low_nibble(iv1);
+        let speed_iv = get_high_nibble(iv2);
+        let special_iv = get_low_nibble(iv2);
+
+        Pokemon {
+            species_id: raw.byte(Pokemon::SPECIES_ID),
+            current_hp: raw.u16_be(Pokemon::CURRENT_HP),
+            level: raw.byte(Pokemon::LEVEL),
+            status: raw.byte(Pokemon::STATUS),
+            pkmn_type_1: raw.byte(Pokemon::TYPE_1),
+            pkmn_type_2: raw.byte(Pokemon::TYPE_2),
+            catch_rate: raw.byte(Pokemon::CATCH_RATE),
+            move_index1: raw.byte(Pokemon::MOVE_INDEX_1),
+            move_index2: raw.byte(Pokemon::MOVE_INDEX_2),
+            move_index3: raw.byte(Pokemon::MOVE_INDEX_3),
+            move_index4: raw.byte(Pokemon::MOVE_INDEX_4),
+            ot_id: raw.u16_be(Pokemon::OT_ID),
+            experience_pts: raw.u24_be(Pokemon::EXPERIENCE_PTS),
+            hp_stat_exp: raw.u16_le(Pokemon::HP_STAT_EXP),
+            attack_stat_exp: raw.u16_le(Pokemon::ATTACK_STAT_EXP),
+            defense_stat_exp: raw.u16_le(Pokemon::DEFENSE_STAT_EXP),
+            speed_stat_exp: raw.u16_le(Pokemon::SPEED_STAT_EXP),
+            special_stat_exp: raw.u16_le(Pokemon::SPECIAL_STAT_EXP),
+            attack_iv, defense_iv, speed_iv, special_iv
+        }
+    }
+
     
     // Function to map pokemon species to ids
     pub fn get_species_name(id: u8) -> &'static str {
@@ -257,6 +390,178 @@ impl Pokemon {
             189 => "Weepinbell",
             190 => "Victreebel",
             _ => INVALID_SPECIES_NAME
+        }
+    }
+
+    pub fn get_move_name(id: u8) -> &'static str {
+        match id {
+            0   => "",
+            1   => "Pound",
+            2   => "Karate Chop",
+            3   => "Double Slap",
+            4   => "Comet Punch",
+            6   => "Mega Punch",
+            7   => "Fire Punch",
+            8   => "Ice Punch",
+            9   => "Thunder Punch",
+            10  => "Scratch",
+            11  => "Vise Grip",
+            12  => "Guillotine",
+            13  => "Razor Wind",
+            14  => "Swords Dance",
+            15  => "Cut",
+            16  => "Gust",
+            17  => "Wing Attack",
+            18  => "Whirlwind",
+            19  => "Fly",
+            20  => "Bind",
+            21  => "Slam",
+            22  => "Vine Whip",
+            23  => "Stomp",
+            24  => "Double Kick",
+            25  => "Mega Kick",
+            26  => "Jump Kick",
+            27  => "Rolling Kick",
+            28  => "Sand Attack",
+            29  => "Headbutt",
+            30  => "Horn Attack",
+            31  => "Fury Attack",
+            32  => "Horn Drill",
+            33  => "Tackle",
+            34  => "Body Slam",
+            35  => "Wrap",
+            36  => "Take Down",
+            37  => "Thrash",
+            38  => "Double Edge",
+            39  => "Tail Whip",
+            40  => "Poison Sting",
+            41  => "Twineedle",
+            42  => "Pin Missile",
+            43  => "Leer",
+            44  => "Bite",
+            45  => "Growl",
+            46  => "Roar",
+            47  => "Sing",
+            48  => "Supersonic",
+            49  => "Sonic Boom",
+            50  => "Disable",
+            51  => "Acid",
+            52  => "Ember",
+            53  => "Flamethrower",
+            54  => "Mist",
+            55  => "Water Gun",
+            56  => "Hydro Pump",
+            57  => "Surf",
+            58  => "Ice Beam",
+            59  => "Blizzard",
+            60  => "Psybeam",
+            61  => "Bubble Beam",
+            62  => "Aurora Beam",
+            63  => "Hyper Beam",
+            64  => "Peck",
+            65  => "Drill Peck",
+            66  => "Submission",
+            67  => "Low Kick",
+            68  => "Counter",
+            69  => "Seismic Toss",
+            70  => "Strength",
+            71  => "Absorb",
+            72  => "Mega Drain",
+            73  => "Leech Seed",
+            74  => "Growth",
+            75  => "Razor Leaf",
+            76  => "Solar Beam",
+            77  => "Poison Powder",
+            78  => "Stun Spore",
+            79  => "Sleep Powder",
+            80  => "Petal Dance",
+            81  => "String Shot",
+            82  => "Dragon Rage",
+            83  => "Fire Spin",
+            84  => "Thunder Shock",
+            85  => "Thunderbolt",
+            86  => "Thunder Wave",
+            87  => "Thunder",
+            88  => "Rock Throw",
+            89  => "Earthquake",
+            90  => "Fissure",
+            91  => "Dig",
+            92  => "Toxic",
+            93  => "Confusion",
+            94  => "Psychic",
+            95  => "Hypnosis",
+            96  => "Meditate",
+            97  => "Agility",
+            98  => "Quick Attack",
+            99  => "Rage",
+            100 => "Teleport",
+            101 => "Night Shade",
+            102 => "Mimic",
+            103 => "Screech",
+            104 => "Double Team",
+            105 => "Recover",
+            106 => "Harden",
+            107 => "Minimize",
+            108 => "Smokescreen",
+            109 => "Confuse Ray",
+            110 => "Withdraw",
+            111 => "Defense Curl",
+            112 => "Barrier",
+            113 => "Light Screen",
+            114 => "Haze",
+            115 => "Reflect",
+            116 => "Focus Energy",
+            117 => "Bide",
+            118 => "Metronome",
+            119 => "Mirror Move",
+            120 => "Self-Destruct",
+            121 => "Egg Bomb",
+            122 => "Lick",
+            123 => "Smog",
+            124 => "Sludge",
+            125 => "Bone Club",
+            126 => "Fire Blast",
+            127 => "Waterfall",
+            128 => "Clamp",
+            129 => "Swift",
+            130 => "Skull Bash",
+            131 => "Spike Cannon",
+            132 => "Constrict",
+            133 => "Amnesia",
+            134 => "Kinesis",
+            135 => "Soft-Boiled",
+            136 => "High Jump Kick",
+            137 => "Glare",
+            138 => "Dream Eater",
+            139 => "Poison Gas",
+            140 => "Barrage",
+            141 => "Leech Life",
+            142 => "Lovely Kiss",
+            143 => "Sky Attack",
+            144 => "Transform",
+            145 => "Bubble",
+            146 => "Dizzy Punch",
+            147 => "Spore",
+            148 => "Flash",
+            149 => "Psywave",
+            150 => "Splash",
+            151 => "Acid Armor",
+            152 => "Crabhammer",
+            153 => "Explosion",
+            154 => "Fury Swipes",
+            155 => "Bonemerang",
+            156 => "Rest",
+            157 => "Rock Slide",
+            158 => "Hyper Fang",
+            159 => "Sharpen",
+            160 => "Conversion",
+            161 => "Tri Attack",
+            162 => "Super Fang",
+            163 => "Slash",
+            164 => "Substitute",
+            165 => "Struggle",
+            _ => "Invalid/Unknown"
+
         }
     }
 }

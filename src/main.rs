@@ -2,7 +2,7 @@ mod save_file;
 mod textencoding;
 mod items;
 mod pokemon;
-
+mod offsets;
 
 use num_format::Locale;
 use num_format::ToFormattedString;
@@ -47,7 +47,6 @@ fn main() -> std::io::Result<()> {
     
     let rival_name = save_file.get_rival_name();
     println!("Rival Name: {rival_name}");
-    
     
     
     

@@ -1,8 +1,6 @@
 use core::fmt;
 
-use crate::save_file::SaveFile;
-
-
+use crate::offsets;
 
 fn get_high_nibble(b: u8) -> u8 {
     (b >> 4) & 0x0F
@@ -106,7 +104,7 @@ impl StatusCondtion {
 impl Pokemon {
 
     // All adition below will be rooting from this first offset. Begin of first party pokemon data.
-    pub const FIRST_PKMN_OFFSET: usize = SaveFile::GEN1_PARTY_DATA_OFFSET + SaveFile::_GEN1_PARTY_START_TO_FIRST;
+    pub const FIRST_PKMN_OFFSET: usize = offsets::PARTY_DATA_OFFSET + offsets::PARTY_START_TO_FIRST;
 
     // All of these constants can be added to the current pokemon's offset 
     // to locate the various data within the games pokemon data structure.

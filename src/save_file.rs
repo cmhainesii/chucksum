@@ -3,6 +3,7 @@ use std::fs;
 use crate::items;
 use crate::pokemon::{Pokemon, PokemonRaw};
 use crate::textencoding;
+use crate::offsets;
 
 
 
@@ -54,37 +55,6 @@ impl std::fmt::Display for PartyError {
 
 impl SaveFile {
     
-    pub const GEN1_CHECKSUM_START: usize = 0x2598;
-    pub const GEN1_CHECKSUM_END: usize  = 0x3522;
-    pub const GEN1_CHECKSUM_OFFSET: usize = 0x3523;
-    pub const GEN1_PLAERY_NAME_OFFSET: usize = 0x2598;
-    pub const GEN1_RIVAL_NAME_OFFSET: usize = 0x25F6;
-    pub const GEN1_MONEY_OFFSET: usize = 0x25F3;
-    pub const GEN1_MONEY_MAX: u32 = 999_999;
-    pub const GEN1_NAME_TERMINATOR: u8 = 0x50;
-    
-    
-    // Item list constants - GEN 1
-    pub const GEN1_BAG_OFFSET: usize = 0x25C9; // Beginning of Bag item list data.
-    pub const GEN1_MAX_BAG_ITEMS: usize = 20;
-    pub const GEN1_LIST_ITEM_SIZE: usize = 2;
-    
-    // This is the offset of the first item in the list relative to the list head
-    pub const GEN1_ITEM_LIST_FIRST_ITEM: usize = 1;
-    
-    // Item box constants
-    pub const GEN1_MAX_BOX_ITEMS: usize = 50;
-    pub const GEN1_BOX_ITEMS_OFFSET: usize = 0x27E6;
-
-    // Party related constants
-    pub const GEN1_PARTY_DATA_OFFSET: usize = 0x2F2C; // Beginning of party data. Party count
-    pub const _GEN1_MAX_PARTY_SIZE: usize = 6;
-    pub const GEN1_PARTY_SPECIES_LIST_OFFSET: usize = 1; // Add this to party data offset to get first species in species list.
-    pub const _GEN1_PARTY_LIST_TERMINATOR: u8 = 0xFF;
-    pub const _GEN1_PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to get to first party pokemon
-
-    
-    
     pub fn new(filename: &str) -> std::io::Result<Self> {
         
         let data = fs::read(filename)?;
@@ -122,8 +92,8 @@ impl SaveFile {
     pub fn save(&mut self, filename: &str) -> std::io::Result<()> {
         
         // Calculate and update checksum. Important, do not skip or file will not be recognized as corrupted by the game
-        self.write_byte(Self::GEN1_CHECKSUM_OFFSET, self.calculate_checksum(
-            Self::GEN1_CHECKSUM_START, Self::GEN1_CHECKSUM_END));
+        self.write_byte(offsets::CHECKSUM_OFFSET, self.calculate_checksum(
+            offsets::CHECKSUM_START, offsets::CHECKSUM_END));
             
             // Write save data to file
             fs::write(filename, &self.data)
@@ -135,7 +105,7 @@ impl SaveFile {
             for byte in &self.data[start..=end] {
                 checksum = checksum.wrapping_add(*byte);
             }
-            println!("checksum: 0x{:04X}: 0x{:02X}", Self::GEN1_CHECKSUM_OFFSET, !checksum);
+            println!("checksum: 0x{:04X}: 0x{:02X}", offsets::CHECKSUM_OFFSET, !checksum);
             !checksum
         }
         
@@ -168,12 +138,12 @@ impl SaveFile {
         }
         
         pub fn bag_items_count(&self) -> u8 {
-            self.read_byte(Self::GEN1_BAG_OFFSET).into()
+            self.read_byte(offsets::BAG_OFFSET).into()
             
         }
         
         pub fn box_items_count(&self) -> u8 {
-            self.read_byte(Self::GEN1_BOX_ITEMS_OFFSET)
+            self.read_byte(offsets::BOX_ITEMS_OFFSET)
         }
 
 
@@ -185,22 +155,22 @@ impl SaveFile {
             let offsets = match dest {
                 ItemStorage::Bag => {
                     ItemStorageOffsets {
-                        offset: Self::GEN1_BAG_OFFSET,
-                        max_items: Self::GEN1_MAX_BAG_ITEMS,
+                        offset: offsets::BAG_OFFSET,
+                        max_items: offsets::MAX_BAG_ITEMS,
                         count: self.bag_items_count()
                     }
                 },
                 ItemStorage::PcBox => {
                     ItemStorageOffsets {
-                        offset: Self::GEN1_BOX_ITEMS_OFFSET,
-                        max_items: Self::GEN1_MAX_BOX_ITEMS,
+                        offset: offsets::BOX_ITEMS_OFFSET,
+                        max_items: offsets::MAX_BOX_ITEMS,
                         count: self.box_items_count(),
                     }
 
                 }
             };
             
-            if offsets.count as usize >= Self::GEN1_MAX_BOX_ITEMS {
+            if offsets.count as usize >= offsets::MAX_BOX_ITEMS {
                 return Err(BagError::BagFull);
             }
             
@@ -208,7 +178,7 @@ impl SaveFile {
             if !items::_is_valid_item(item_id) {
                 return Err(BagError::InvalidItemId(item_id));
             }
-            let next_free_slot = (offsets.offset + Self::GEN1_ITEM_LIST_FIRST_ITEM)+ (Self::GEN1_LIST_ITEM_SIZE * offsets.count as usize);
+            let next_free_slot = (offsets.offset + offsets::ITEM_LIST_FIRST_ITEM)+ (offsets::LIST_ITEM_SIZE * offsets.count as usize);
             let item_data = [item_id, qty];
             
             self.write_bytes(next_free_slot, &item_data);
@@ -227,15 +197,15 @@ impl SaveFile {
             let dest_offsets = match destination {
                 ItemStorage::Bag => {
                     ItemStorageOffsets {
-                        max_items: Self::GEN1_MAX_BAG_ITEMS,
-                        offset : Self::GEN1_BAG_OFFSET,
+                        max_items: offsets::MAX_BAG_ITEMS,
+                        offset : offsets::BAG_OFFSET,
                         count: self.bag_items_count()
                     }
                 }
                 ItemStorage::PcBox => {
                     ItemStorageOffsets {
-                        max_items: Self::GEN1_MAX_BOX_ITEMS,
-                        offset: Self::GEN1_BOX_ITEMS_OFFSET,
+                        max_items: offsets::MAX_BOX_ITEMS,
+                        offset: offsets::BOX_ITEMS_OFFSET,
                         count: self.box_items_count()
                     }
                 }
@@ -243,8 +213,8 @@ impl SaveFile {
 
             
             if dest_offsets.count > 0 {
-                let mut current_offset = dest_offsets.offset + Self::GEN1_ITEM_LIST_FIRST_ITEM;
-                let last_slot_offset = current_offset + (Self::GEN1_LIST_ITEM_SIZE * dest_offsets.max_items);
+                let mut current_offset = dest_offsets.offset + offsets::ITEM_LIST_FIRST_ITEM;
+                let last_slot_offset = current_offset + (offsets::LIST_ITEM_SIZE * dest_offsets.max_items);
                 
                 while current_offset <= last_slot_offset && current_slot < dest_offsets.count  {
                     let current_item = items::get_item_name(self.read_byte(current_offset));
@@ -261,19 +231,19 @@ impl SaveFile {
         }
 
         pub fn set_player_name(&mut self, input: &str) {
-            self.write_string(input, Self::GEN1_PLAERY_NAME_OFFSET, 0x50);
+            self.write_string(input, offsets::PLAYER_NAME_OFFSET, 0x50);
         }
 
         pub fn get_player_name(&self) -> String {
-            self.read_string(Self::GEN1_PLAERY_NAME_OFFSET, 0x50)
+            self.read_string(offsets::PLAYER_NAME_OFFSET, 0x50)
         }
 
         pub fn set_rival_name(&mut self, input: &str) {
-            self.write_string(input, Self::GEN1_RIVAL_NAME_OFFSET, Self::GEN1_NAME_TERMINATOR);
+            self.write_string(input, offsets::RIVAL_NAME_OFFSET, offsets::NAME_TERMINATOR);
         }
 
         pub fn get_rival_name(&self) -> String {
-            self.read_string(Self::GEN1_RIVAL_NAME_OFFSET, Self::GEN1_NAME_TERMINATOR)
+            self.read_string(offsets::RIVAL_NAME_OFFSET, offsets::NAME_TERMINATOR)
         }
 
         fn _bcd_byte_to_decimal(byte: u8) -> u8 {
@@ -292,7 +262,7 @@ impl SaveFile {
 
 
         pub fn get_money(&self) -> u32 {
-            let offset = Self::GEN1_MONEY_OFFSET;
+            let offset = offsets::MONEY_OFFSET;
 
             let b1 = self.data[offset];
             let b2 = self.data[offset + 1];
@@ -307,7 +277,7 @@ impl SaveFile {
 
         fn _money_to_bcd_bytes(mut money: u32) -> [u8; 3] {
             // Cap to Gen 1 max
-            money = money.min(Self::GEN1_MONEY_MAX);
+            money = money.min(offsets::MONEY_MAX);
 
             let hundred_thousands = (money / 100_000) as u8;
             let ten_thousands = ((money / 10_000) % 10) as u8;
@@ -325,18 +295,18 @@ impl SaveFile {
 
         pub fn set_money(&mut self, money: u32) {
             let bytes = Self::_money_to_bcd_bytes(money);
-            self.write_bytes(Self::GEN1_MONEY_OFFSET, &bytes);
+            self.write_bytes(offsets::MONEY_OFFSET, &bytes);
         }
 
         pub fn get_party_species_names(&self) -> Result<Vec<&'static str>, PartyError> {
 
-            let count = self.read_byte(Self::GEN1_PARTY_DATA_OFFSET);
+            let count = self.read_byte(offsets::PARTY_DATA_OFFSET);
             if count <= 0 || count > 6 {
                 return Err(PartyError::LookupError);
             }
             let mut species_names: Vec<&'static str> = Vec::new();
-            let count = self.read_byte(Self::GEN1_PARTY_DATA_OFFSET);
-            let current_offset = Self::GEN1_PARTY_DATA_OFFSET + Self::GEN1_PARTY_SPECIES_LIST_OFFSET;
+            let count = self.read_byte(offsets::PARTY_DATA_OFFSET);
+            let current_offset = offsets::PARTY_DATA_OFFSET + offsets::PARTY_SPECIES_LIST_OFFSET;
             for i in 0..count as usize {
                 let species_id = self.read_byte(current_offset + i);
                 species_names.push(Pokemon::get_species_name(species_id));
@@ -348,7 +318,7 @@ impl SaveFile {
         }
 
         pub fn get_party_count(&self) -> usize {
-            self.read_byte(Self::GEN1_PARTY_DATA_OFFSET) as usize
+            self.read_byte(offsets::PARTY_DATA_OFFSET) as usize
         }
 
         pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {

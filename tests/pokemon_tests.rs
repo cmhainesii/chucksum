@@ -75,3 +75,25 @@ fn from_raw_parses_all_fields_and_endianness() {
 
 
 }
+
+#[test]
+fn get_type_name_returns_correct_name() {
+    assert_eq!(Pokemon::get_type_name(0), "Normal");
+    assert_eq!(Pokemon::get_type_name(1), "Fighting");
+    assert_eq!(Pokemon::get_type_name(2), "Flying");
+    assert_eq!(Pokemon::get_type_name(3), "Poison");
+    assert_eq!(Pokemon::get_type_name(4), "Ground");
+    assert_eq!(Pokemon::get_type_name(5), "Rock");
+    assert_eq!(Pokemon::get_type_name(6), "Invalid/Unknown");
+    assert_eq!(Pokemon::get_type_name(7), "Bug");
+    assert_eq!(Pokemon::get_type_name(8), "Ghost");
+    assert_eq!(Pokemon::get_type_name(20), "Fire");
+    assert_eq!(Pokemon::get_type_name(21), "Water");
+    assert_eq!(Pokemon::get_type_name(22), "Grass");
+    assert_eq!(Pokemon::get_type_name(23), "Electric");
+    assert_eq!(Pokemon::get_type_name(24), "Psychic");
+    assert_eq!(Pokemon::get_type_name(25), "Ice");
+    assert_eq!(Pokemon::get_type_name(26), "Dragon");
+    assert_eq!(Pokemon::get_type_name(35), "Invalid/Unknown");
+    assert_eq!(Pokemon::get_type_name(99), "Invalid/Unknown");
+}

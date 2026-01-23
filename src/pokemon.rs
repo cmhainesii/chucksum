@@ -35,12 +35,12 @@ pub struct Pokemon {
 }
 
 pub struct PokemonRaw {
-    data: [u8; Pokemon::NEXT_PARTY_PKMN]
+    data: [u8; offsets::NEXT_PARTY_PKMN]
 }
 
 impl PokemonRaw {
 
-    pub fn new(data: [u8; Pokemon::NEXT_PARTY_PKMN]) -> Self {
+    pub fn new(data: [u8; offsets::NEXT_PARTY_PKMN]) -> Self {
         PokemonRaw { data }
     }
 
@@ -103,34 +103,7 @@ impl StatusCondtion {
 
 impl Pokemon {
 
-    // All adition below will be rooting from this first offset. Begin of first party pokemon data.
-    pub const FIRST_PKMN_OFFSET: usize = offsets::PARTY_DATA_OFFSET + offsets::PARTY_START_TO_FIRST;
-
-    // All of these constants can be added to the current pokemon's offset 
-    // to locate the various data within the games pokemon data structure.
-    // Example: (FIRST_PKMN_OFFSET + SPECIES_ID) yields the byte holding the species
-    // id for the first party pokemon.
-    pub const SPECIES_ID: usize = 0x00;
-    pub const CURRENT_HP: usize = 0x01;
-    pub const LEVEL: usize = 0x03;
-    pub const STATUS: usize = 0x04;
-    pub const TYPE_1: usize = 0x05;
-    pub const TYPE_2: usize = 0x06;
-    pub const CATCH_RATE: usize = 0x07;
-    pub const MOVE_INDEX_1: usize = 0x08;
-    pub const MOVE_INDEX_2: usize = 0x09;
-    pub const MOVE_INDEX_3: usize = 0x0A;
-    pub const MOVE_INDEX_4: usize = 0x0B;
-    pub const OT_ID: usize = 0x0C;
-    pub const EXPERIENCE_PTS: usize = 0x0E;
-    pub const HP_STAT_EXP: usize = 0x11;
-    pub const ATTACK_STAT_EXP: usize = 0x13;
-    pub const DEFENSE_STAT_EXP: usize = 0x15;
-    pub const SPEED_STAT_EXP: usize = 0x17;
-    pub const SPECIAL_STAT_EXP: usize = 0x19;
-    pub const IV_1: usize = 0x1B;
-    pub const IV_2: usize = 0x1C;
-    pub const NEXT_PARTY_PKMN: usize = 0x2C;
+    
 
     pub fn get_type_name(pkmn_type: u8) -> &'static str {
         match pkmn_type {
@@ -159,8 +132,8 @@ impl Pokemon {
 
 
     pub fn from_raw(raw: PokemonRaw) -> Pokemon {
-        let iv1 = raw.byte(Pokemon::IV_1);
-        let iv2 = raw.byte(Pokemon::IV_2);
+        let iv1 = raw.byte(offsets::IV_1);
+        let iv2 = raw.byte(offsets::IV_2);
 
         let attack_iv = get_high_nibble(iv1);
         let defense_iv = get_low_nibble(iv1);
@@ -168,24 +141,24 @@ impl Pokemon {
         let special_iv = get_low_nibble(iv2);
 
         Pokemon {
-            species_id: raw.byte(Pokemon::SPECIES_ID),
-            current_hp: raw.u16_be(Pokemon::CURRENT_HP),
-            level: raw.byte(Pokemon::LEVEL),
-            status: raw.byte(Pokemon::STATUS),
-            pkmn_type_1: raw.byte(Pokemon::TYPE_1),
-            pkmn_type_2: raw.byte(Pokemon::TYPE_2),
-            catch_rate: raw.byte(Pokemon::CATCH_RATE),
-            move_index1: raw.byte(Pokemon::MOVE_INDEX_1),
-            move_index2: raw.byte(Pokemon::MOVE_INDEX_2),
-            move_index3: raw.byte(Pokemon::MOVE_INDEX_3),
-            move_index4: raw.byte(Pokemon::MOVE_INDEX_4),
-            ot_id: raw.u16_be(Pokemon::OT_ID),
-            experience_pts: raw.u24_be(Pokemon::EXPERIENCE_PTS),
-            hp_stat_exp: raw.u16_le(Pokemon::HP_STAT_EXP),
-            attack_stat_exp: raw.u16_le(Pokemon::ATTACK_STAT_EXP),
-            defense_stat_exp: raw.u16_le(Pokemon::DEFENSE_STAT_EXP),
-            speed_stat_exp: raw.u16_le(Pokemon::SPEED_STAT_EXP),
-            special_stat_exp: raw.u16_le(Pokemon::SPECIAL_STAT_EXP),
+            species_id: raw.byte(offsets::SPECIES_ID),
+            current_hp: raw.u16_be(offsets::CURRENT_HP),
+            level: raw.byte(offsets::LEVEL),
+            status: raw.byte(offsets::STATUS),
+            pkmn_type_1: raw.byte(offsets::TYPE_1),
+            pkmn_type_2: raw.byte(offsets::TYPE_2),
+            catch_rate: raw.byte(offsets::CATCH_RATE),
+            move_index1: raw.byte(offsets::MOVE_INDEX_1),
+            move_index2: raw.byte(offsets::MOVE_INDEX_2),
+            move_index3: raw.byte(offsets::MOVE_INDEX_3),
+            move_index4: raw.byte(offsets::MOVE_INDEX_4),
+            ot_id: raw.u16_be(offsets::OT_ID),
+            experience_pts: raw.u24_be(offsets::EXPERIENCE_PTS),
+            hp_stat_exp: raw.u16_le(offsets::HP_STAT_EXP),
+            attack_stat_exp: raw.u16_le(offsets::ATTACK_STAT_EXP),
+            defense_stat_exp: raw.u16_le(offsets::DEFENSE_STAT_EXP),
+            speed_stat_exp: raw.u16_le(offsets::SPEED_STAT_EXP),
+            special_stat_exp: raw.u16_le(offsets::SPECIAL_STAT_EXP),
             attack_iv, defense_iv, speed_iv, special_iv
         }
     }

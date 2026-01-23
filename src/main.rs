@@ -132,8 +132,16 @@ fn main() -> std::io::Result<()> {
         Err(e) => println!("Lookup error: {e}")
     }
 
+    match save_file.badges_strings() {
+        Ok(badges) => {
+            for badge in badges {
+                println!("{badge}");
+            }
+        },
+        Err(e) => println!("Error: {e}")
+    }
 
-    
+    println!("Player ID: {}", save_file.get_player_id());
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;
 

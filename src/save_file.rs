@@ -1,7 +1,10 @@
 use std::fs;
 
+use bitflags::bitflags;
+
 use crate::items;
-use crate::pokemon::{Pokemon, PokemonRaw};
+use crate::pokemon::Pokemon;
+use crate::pokemon::PokemonRaw;
 use crate::textencoding;
 use crate::offsets;
 
@@ -9,6 +12,22 @@ use crate::offsets;
 
 pub struct SaveFile {
     data: Vec<u8>
+}
+
+
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Badges: u8 {
+        const BOULDER = 0b0000_0001;
+        const CASCADE = 0b0000_0010;
+        const THUNDER = 0b0000_0100;
+        const RAINBOW = 0b0000_1000;
+        const SOUL = 0b0001_0000;
+        const MARSH = 0b0010_0000;
+        const VOLCANO = 0b0100_0000;
+        const EARTH = 0b1000_0000;
+    }
 }
 
 #[derive(Debug)]
@@ -67,8 +86,12 @@ impl SaveFile {
         self.data[offset]
     }
     
-    pub fn _read_bytes(&self, start: usize, end: usize) -> &[u8] {
-        &self.data[start..=end]
+    pub fn read_u16_be(&self, offset: usize) -> u16 {
+        u16::from_be_bytes([self.data[offset], self.data[offset + 1]])
+    }
+
+    pub fn _read_u16_le(&self, offset: usize) -> u16 {
+        u16::from_le_bytes([self.data[offset], self.data[offset + 1]])
     }
     
     pub fn write_byte(&mut self, offset: usize, value: u8) {
@@ -328,14 +351,14 @@ impl SaveFile {
                 return Err(PartyError::LookupError);
             }
 
-            let mut offset = Pokemon::FIRST_PKMN_OFFSET;
+            let mut offset = offsets::FIRST_PKMN_OFFSET;
             let mut list = Vec::new();
 
             for _ in 0..count {
                 let raw = self.read_pokemon_raw(offset);
                 let pokemon = Pokemon::from_raw(raw);
                 list.push(pokemon);
-                offset += Pokemon::NEXT_PARTY_PKMN;
+                offset += offsets::NEXT_PARTY_PKMN;
             }
 
             Ok(list)
@@ -345,6 +368,42 @@ impl SaveFile {
             let mut data = [0u8; 0x2C];
             data.copy_from_slice(&self.data[offset..offset + 0x2C]);
             PokemonRaw::new(data)
+        }
+
+        pub fn get_badges(&self) -> Badges {
+            Badges::from_bits_truncate(self.read_byte(offsets::BADGES))
+        }
+
+        pub fn badges_strings(&self) -> Result<Vec<&'static str>, PartyError> {
+            let b = self.get_badges();
+            // let b = Badges::from_bits_truncate(0b0010_1111);
+            let names = [
+                (Badges::BOULDER, "Boulder"),
+                (Badges::CASCADE, "Cascade"),
+                (Badges::THUNDER, "Thunder"),
+                (Badges::RAINBOW, "Rainbow"),
+                (Badges::SOUL, "Soul"),
+                (Badges::MARSH, "Marsh"),
+                (Badges::VOLCANO, "Volcano"),
+                (Badges::EARTH, "Earth"),
+            ];
+            
+            let mut collected = Vec::new();
+            for (flag, name) in names.iter() {
+                if b.contains(*flag) {
+                    collected.push(*name);
+                }
+            }
+
+            if collected.is_empty() {
+                Err(PartyError::LookupError)
+            } else {
+                Ok(collected)
+            }
+        }
+
+        pub fn get_player_id(&self) -> u16 {
+            self.read_u16_be(offsets::PLAYER_ID)
         }
 
 

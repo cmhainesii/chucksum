@@ -35,12 +35,12 @@ pub struct Pokemon {
 }
 
 pub struct PokemonRaw {
-    data: [u8; offsets::NEXT_PARTY_PKMN]
+    data: [u8; offsets::PARTY_NEXT_PKMN]
 }
 
 impl PokemonRaw {
 
-    pub fn new(data: [u8; offsets::NEXT_PARTY_PKMN]) -> Self {
+    pub fn new(data: [u8; offsets::PARTY_NEXT_PKMN]) -> Self {
         PokemonRaw { data }
     }
 
@@ -132,8 +132,8 @@ impl Pokemon {
 
 
     pub fn from_raw(raw: PokemonRaw) -> Pokemon {
-        let iv1 = raw.byte(offsets::IV_1);
-        let iv2 = raw.byte(offsets::IV_2);
+        let iv1 = raw.byte(offsets::PARTY_IV_1);
+        let iv2 = raw.byte(offsets::PARTY_IV_2);
 
         let attack_iv = get_high_nibble(iv1);
         let defense_iv = get_low_nibble(iv1);
@@ -141,24 +141,24 @@ impl Pokemon {
         let special_iv = get_low_nibble(iv2);
 
         Pokemon {
-            species_id: raw.byte(offsets::SPECIES_ID),
-            current_hp: raw.u16_be(offsets::CURRENT_HP),
-            level: raw.byte(offsets::LEVEL),
-            status: raw.byte(offsets::STATUS),
-            pkmn_type_1: raw.byte(offsets::TYPE_1),
-            pkmn_type_2: raw.byte(offsets::TYPE_2),
-            catch_rate: raw.byte(offsets::CATCH_RATE),
-            move_index1: raw.byte(offsets::MOVE_INDEX_1),
-            move_index2: raw.byte(offsets::MOVE_INDEX_2),
-            move_index3: raw.byte(offsets::MOVE_INDEX_3),
-            move_index4: raw.byte(offsets::MOVE_INDEX_4),
-            ot_id: raw.u16_be(offsets::OT_ID),
-            experience_pts: raw.u24_be(offsets::EXPERIENCE_PTS),
-            hp_stat_exp: raw.u16_le(offsets::HP_STAT_EXP),
-            attack_stat_exp: raw.u16_le(offsets::ATTACK_STAT_EXP),
-            defense_stat_exp: raw.u16_le(offsets::DEFENSE_STAT_EXP),
-            speed_stat_exp: raw.u16_le(offsets::SPEED_STAT_EXP),
-            special_stat_exp: raw.u16_le(offsets::SPECIAL_STAT_EXP),
+            species_id: raw.byte(offsets::PARTY_SPECIES_ID),
+            current_hp: raw.u16_be(offsets::PARTY_CURRENT_HP),
+            level: raw.byte(offsets::PARTY_LEVEL),
+            status: raw.byte(offsets::PARTY_STATUS),
+            pkmn_type_1: raw.byte(offsets::PARTY_TYPE_1),
+            pkmn_type_2: raw.byte(offsets::PARTY_TYPE_2),
+            catch_rate: raw.byte(offsets::PARTY_CATCH_RATE),
+            move_index1: raw.byte(offsets::PARTY_MOVE_INDEX_1),
+            move_index2: raw.byte(offsets::PARTY_MOVE_INDEX_2),
+            move_index3: raw.byte(offsets::PARTY_MOVE_INDEX_3),
+            move_index4: raw.byte(offsets::PARTY_MOVE_INDEX_4),
+            ot_id: raw.u16_be(offsets::PARTY_OT_ID),
+            experience_pts: raw.u24_be(offsets::PARTY_EXPERIENCE_PTS),
+            hp_stat_exp: raw.u16_le(offsets::PARTY_HP_STAT_EXP),
+            attack_stat_exp: raw.u16_le(offsets::PARTY_ATTACK_STAT_EXP),
+            defense_stat_exp: raw.u16_le(offsets::PARTY_DEFENSE_STAT_EXP),
+            speed_stat_exp: raw.u16_le(offsets::PARTY_SPEED_STAT_EXP),
+            special_stat_exp: raw.u16_le(offsets::PARTY_SPECIAL_STAT_EXP),
             attack_iv, defense_iv, speed_iv, special_iv
         }
     }

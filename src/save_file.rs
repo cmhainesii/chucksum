@@ -351,14 +351,14 @@ impl SaveFile {
                 return Err(PartyError::LookupError);
             }
 
-            let mut offset = offsets::FIRST_PKMN_OFFSET;
+            let mut offset = offsets::PARTY_FIRST_PKMN;
             let mut list = Vec::new();
 
             for _ in 0..count {
                 let raw = self.read_pokemon_raw(offset);
                 let pokemon = Pokemon::from_raw(raw);
                 list.push(pokemon);
-                offset += offsets::NEXT_PARTY_PKMN;
+                offset += offsets::PARTY_NEXT_PKMN;
             }
 
             Ok(list)

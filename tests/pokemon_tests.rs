@@ -1,11 +1,12 @@
 use chucksum::pokemon::Pokemon;
 use chucksum::pokemon::PokemonRaw;
+use chucksum::offsets;
 
 #[test]
 fn iv_nibbles_are_split_correctly() {
-    let mut bytes = [0u8; Pokemon::NEXT_PARTY_PKMN];
-    bytes[Pokemon::IV_1] = 0xAB;
-    bytes[Pokemon::IV_2] = 0xCD;
+    let mut bytes = [0u8; offsets::NEXT_PARTY_PKMN];
+    bytes[offsets::IV_1] = 0xAB;
+    bytes[offsets::IV_2] = 0xCD;
 
     let p = Pokemon::from_raw(PokemonRaw::new(bytes));
 
@@ -17,36 +18,36 @@ fn iv_nibbles_are_split_correctly() {
 
 #[test]
 fn from_raw_parses_all_fields_and_endianness() {
-    let mut bytes = [0u8; Pokemon::NEXT_PARTY_PKMN];
-    bytes[Pokemon::SPECIES_ID] = 176; // Charmander
-    bytes[Pokemon::CURRENT_HP] = 0x12;
-    bytes[Pokemon::CURRENT_HP + 1] = 0x34;
-    bytes[Pokemon::LEVEL] = 42;
-    bytes[Pokemon::STATUS] = 0x40; // Paralyzed
-    bytes[Pokemon::TYPE_1] = 20; // Fire
-    bytes[Pokemon::TYPE_2] = 0; // Normal
-    bytes[Pokemon::CATCH_RATE] = 200;
-    bytes[Pokemon::MOVE_INDEX_1] = 52; // Ember
-    bytes[Pokemon::MOVE_INDEX_2] = 53; //Flamethrower
-    bytes[Pokemon::MOVE_INDEX_3] = 91; // Dig
-    bytes[Pokemon::MOVE_INDEX_4] = 84; // Thunder Shock
-    bytes[Pokemon::OT_ID] = 0xAA;
-    bytes[Pokemon::OT_ID + 1] = 0xBB;
-    bytes[Pokemon::EXPERIENCE_PTS] = 0x00;
-    bytes[Pokemon::EXPERIENCE_PTS + 1] = 0x10;
-    bytes[Pokemon::EXPERIENCE_PTS + 2] = 0x20;
-    bytes[Pokemon::HP_STAT_EXP] = 0x34; // Little-endian
-    bytes[Pokemon::HP_STAT_EXP + 1] = 0x12;
-    bytes[Pokemon::ATTACK_STAT_EXP] = 0x78;
-    bytes[Pokemon::ATTACK_STAT_EXP + 1] = 0x56;
-    bytes[Pokemon::DEFENSE_STAT_EXP] = 0xBC;
-    bytes[Pokemon::DEFENSE_STAT_EXP + 1] = 0x9A;
-    bytes[Pokemon::SPEED_STAT_EXP] = 0xF0;
-    bytes[Pokemon::SPEED_STAT_EXP + 1] = 0xDE;
-    bytes[Pokemon::SPECIAL_STAT_EXP] = 0x44;
-    bytes[Pokemon::SPECIAL_STAT_EXP + 1] = 0x33;
-    bytes[Pokemon::IV_1] = 0xAB;
-    bytes[Pokemon::IV_2] = 0xCD;
+    let mut bytes = [0u8; offsets::NEXT_PARTY_PKMN];
+    bytes[offsets::SPECIES_ID] = 176; // Charmander
+    bytes[offsets::CURRENT_HP] = 0x12;
+    bytes[offsets::CURRENT_HP + 1] = 0x34;
+    bytes[offsets::LEVEL] = 42;
+    bytes[offsets::STATUS] = 0x40; // Paralyzed
+    bytes[offsets::TYPE_1] = 20; // Fire
+    bytes[offsets::TYPE_2] = 0; // Normal
+    bytes[offsets::CATCH_RATE] = 200;
+    bytes[offsets::MOVE_INDEX_1] = 52; // Ember
+    bytes[offsets::MOVE_INDEX_2] = 53; //Flamethrower
+    bytes[offsets::MOVE_INDEX_3] = 91; // Dig
+    bytes[offsets::MOVE_INDEX_4] = 84; // Thunder Shock
+    bytes[offsets::OT_ID] = 0xAA;
+    bytes[offsets::OT_ID + 1] = 0xBB;
+    bytes[offsets::EXPERIENCE_PTS] = 0x00;
+    bytes[offsets::EXPERIENCE_PTS + 1] = 0x10;
+    bytes[offsets::EXPERIENCE_PTS + 2] = 0x20;
+    bytes[offsets::HP_STAT_EXP] = 0x34; // Little-endian
+    bytes[offsets::HP_STAT_EXP + 1] = 0x12;
+    bytes[offsets::ATTACK_STAT_EXP] = 0x78;
+    bytes[offsets::ATTACK_STAT_EXP + 1] = 0x56;
+    bytes[offsets::DEFENSE_STAT_EXP] = 0xBC;
+    bytes[offsets::DEFENSE_STAT_EXP + 1] = 0x9A;
+    bytes[offsets::SPEED_STAT_EXP] = 0xF0;
+    bytes[offsets::SPEED_STAT_EXP + 1] = 0xDE;
+    bytes[offsets::SPECIAL_STAT_EXP] = 0x44;
+    bytes[offsets::SPECIAL_STAT_EXP + 1] = 0x33;
+    bytes[offsets::IV_1] = 0xAB;
+    bytes[offsets::IV_2] = 0xCD;
 
     let p = Pokemon::from_raw(PokemonRaw::new(bytes));
 

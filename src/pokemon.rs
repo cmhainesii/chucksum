@@ -32,6 +32,7 @@ pub struct Pokemon {
     pub defense_iv: u8,
     pub speed_iv: u8,
     pub special_iv: u8,
+    pub max_hp: u16,
 }
 
 pub struct PokemonRaw {
@@ -159,7 +160,8 @@ impl Pokemon {
             defense_stat_exp: raw.u16_le(offsets::PARTY_DEFENSE_STAT_EXP),
             speed_stat_exp: raw.u16_le(offsets::PARTY_SPEED_STAT_EXP),
             special_stat_exp: raw.u16_le(offsets::PARTY_SPECIAL_STAT_EXP),
-            attack_iv, defense_iv, speed_iv, special_iv
+            attack_iv, defense_iv, speed_iv, special_iv,
+            max_hp: raw.u16_be(offsets::PARTY_MAX_HP),
         }
     }
 

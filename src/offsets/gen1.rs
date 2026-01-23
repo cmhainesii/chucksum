@@ -47,7 +47,7 @@ pub const BOX_CURRENT_FIRST_PKMN: usize = BOX_CURRENT_DATA_OFFSET + BOX_START_TO
 // id for the first party pokemon.
 pub const PARTY_SPECIES_ID: usize = 0x00;
 pub const PARTY_CURRENT_HP: usize = 0x01;
-pub const PARTY_LEVEL: usize = 0x03;
+pub const PARTY_LEVEL: usize = 0x21;
 pub const PARTY_STATUS: usize = 0x04;
 pub const PARTY_TYPE_1: usize = 0x05;
 pub const PARTY_TYPE_2: usize = 0x06;
@@ -66,3 +66,4 @@ pub const PARTY_SPECIAL_STAT_EXP: usize = 0x19;
 pub const PARTY_IV_1: usize = 0x1B;
 pub const PARTY_IV_2: usize = 0x1C;
 pub const PARTY_NEXT_PKMN: usize = 0x2C;
+pub const PARTY_MAX_HP: usize = 0x22;

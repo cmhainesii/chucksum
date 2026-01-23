@@ -106,6 +106,7 @@ fn main() -> std::io::Result<()> {
             for pokemon in pokemon_list {
                 println!("          Species: {}", Pokemon::get_species_name(pokemon.species_id));
                 println!("       Current HP: {}", pokemon.current_hp);
+                println!("           Max HP: {}", pokemon.max_hp);
                 println!("            Level: {}", pokemon.level);
                 println!("           Status: {}", StatusCondtion::from_byte(pokemon.status));
                 println!("             Type: {}", Pokemon::get_type_name(pokemon.pkmn_type_1));

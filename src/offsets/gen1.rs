@@ -23,22 +23,24 @@ pub const BOX_ITEMS_OFFSET: usize = 0x27E6;
 
 // Party related constants
 pub const PARTY_DATA_OFFSET: usize = 0x2F2C; // Beginning of party data. Party count
-pub const _MAX_PARTY_SIZE: usize = 6;
+pub const MAX_PARTY_SIZE: usize = 6;
+pub const MAX_POKEMON_BOX_SIZE: usize = 20;
 pub const PARTY_SPECIES_LIST_OFFSET: usize = 1; // Add this to party data offset to get first species in species list.
 pub const _PARTY_LIST_TERMINATOR: u8 = 0xFF;
 pub const PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to get to first party pokemon
 
 pub const BADGES: usize = 0x2602;
 
-pub const BOX_1_DATA_OFFSET: usize = 0x4000;
-pub const BOX_6_DATA_OFFSET: usize = 0x6000;
+pub const _BOX_1_DATA_OFFSET: usize = 0x4000;
+pub const _BOX_6_DATA_OFFSET: usize = 0x6000;
 pub const BOX_CURRENT_DATA_OFFSET: usize = 0x30C0;
 pub const BOX_START_TO_FIRST: usize = 0x16;
+pub const BOX_NEXT_PKMN: usize = 0x21;
 
 // All adition below will be rooting from this first offset. Begin of first party pokemon data.
 pub const PARTY_FIRST_PKMN: usize = PARTY_DATA_OFFSET + PARTY_START_TO_FIRST;
-pub const BOX1_FIRST_PKMN: usize = BOX_1_DATA_OFFSET + BOX_START_TO_FIRST;
-pub const BOX6_FIRST_PKMN: usize = BOX_6_DATA_OFFSET + BOX_START_TO_FIRST;
+pub const _BOX1_FIRST_PKMN: usize = _BOX_1_DATA_OFFSET + BOX_START_TO_FIRST;
+pub const _BOX6_FIRST_PKMN: usize = _BOX_6_DATA_OFFSET + BOX_START_TO_FIRST;
 pub const BOX_CURRENT_FIRST_PKMN: usize = BOX_CURRENT_DATA_OFFSET + BOX_START_TO_FIRST;
 
 // All of these constants can be added to the current pokemon's offset 
@@ -67,3 +69,7 @@ pub const PARTY_IV_1: usize = 0x1B;
 pub const PARTY_IV_2: usize = 0x1C;
 pub const PARTY_NEXT_PKMN: usize = 0x2C;
 pub const PARTY_MAX_HP: usize = 0x22;
+pub const PARTY_ATTACK: usize = 0x24;
+pub const PARTY_DEFENSE: usize = 0x26;
+pub const PARTY_SPEED: usize = 0x28;
+pub const PARTY_SPECIAL: usize = 0x2A;

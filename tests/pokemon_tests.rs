@@ -1,4 +1,4 @@
-use chucksum::offsets::PARTY_NEXT_PKMN;
+
 use chucksum::pokemon::Pokemon;
 use chucksum::pokemon::PokemonRaw;
 use chucksum::offsets;

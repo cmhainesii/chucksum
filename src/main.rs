@@ -126,7 +126,47 @@ fn main() -> std::io::Result<()> {
                 println!("        Attack IV: {}", pokemon.attack_iv);
                 println!("       Defense IV: {}", pokemon.defense_iv);
                 println!("         Speed IV: {}", pokemon.speed_iv);
-                println!("       Special IV: {}\n", pokemon.special_iv)
+                println!("       Special IV: {}", pokemon.special_iv);
+                println!("           Attack: {}", pokemon.attack);
+                println!("          Defense: {}", pokemon.defense);
+                println!("            Speed: {}", pokemon.speed);
+                println!("          Special: {}\n", pokemon.special);
+                
+            }
+        },
+        Err(e) => println!("Lookup error: {e}")
+    }
+
+    match save_file.get_current_box_pokemon_data() {
+        Ok(pokemon_list) => {
+            for pokemon in pokemon_list {
+                println!("          Species: {}", Pokemon::get_species_name(pokemon.species_id));
+                println!("       Current HP: {}", pokemon.current_hp);
+                println!("           Max HP: {}", pokemon.max_hp);
+                println!("            Level: {}", pokemon.level);
+                println!("           Status: {}", StatusCondtion::from_byte(pokemon.status));
+                println!("             Type: {}", Pokemon::get_type_name(pokemon.pkmn_type_1));
+                println!("            Type2: {}", Pokemon::get_type_name(pokemon.pkmn_type_2));
+                println!("       Catch Rate: {}", pokemon.catch_rate);
+                println!("           Move 1: {}", Pokemon::get_move_name(pokemon.move_index1));
+                println!("           Move 2: {}", Pokemon::get_move_name(pokemon.move_index2));
+                println!("           Move 3: {}", Pokemon::get_move_name(pokemon.move_index3));
+                println!("           Move 4: {}", Pokemon::get_move_name(pokemon.move_index4));
+                println!("            OT ID: {}", pokemon.ot_id); 
+                println!("Experience Points: {}", pokemon.experience_pts.to_formatted_string(&Locale::en));
+                println!("      HP Stat Exp: {}", pokemon.hp_stat_exp.to_formatted_string(&Locale::en));
+                println!("  Attack Stat Exp: {}", pokemon.attack_stat_exp.to_formatted_string(&Locale::en));
+                println!(" Defense Stat Exp: {}", pokemon.defense_stat_exp.to_formatted_string(&Locale::en));
+                println!("   Speed Stat Exp: {}", pokemon.speed_stat_exp.to_formatted_string(&Locale::en));
+                println!(" Special Stat Exp: {}", pokemon.special_stat_exp.to_formatted_string(&Locale::en));
+                println!("        Attack IV: {}", pokemon.attack_iv);
+                println!("       Defense IV: {}", pokemon.defense_iv);
+                println!("         Speed IV: {}", pokemon.speed_iv);
+                println!("       Special IV: {}", pokemon.special_iv);
+                println!("           Attack: {}", pokemon.attack);
+                println!("          Defense: {}", pokemon.defense);
+                println!("            Speed: {}", pokemon.speed);
+                println!("          Special: {}\n", pokemon.special);
                 
             }
         },

@@ -344,10 +344,14 @@ impl SaveFile {
             self.read_byte(offsets::PARTY_DATA_OFFSET) as usize
         }
 
+        pub fn get_current_box_pokemon_count(&self) -> usize {
+            self.read_byte(offsets::BOX_CURRENT_DATA_OFFSET) as usize
+        }
+
         pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
             let count = self.get_party_count();
             
-            if count <= 0 || count > 6 {
+            if count <= 0 || count > offsets::MAX_PARTY_SIZE {
                 return Err(PartyError::LookupError);
             }
 
@@ -355,19 +359,46 @@ impl SaveFile {
             let mut list = Vec::new();
 
             for _ in 0..count {
-                let raw = self.read_pokemon_raw(offset);
+                let raw = self.read_party_pokemon_raw(offset);
                 let pokemon = Pokemon::from_raw(raw);
                 list.push(pokemon);
                 offset += offsets::PARTY_NEXT_PKMN;
             }
 
             Ok(list)
-        }        
+        }
+        
 
-        pub fn read_pokemon_raw(&self, offset: usize) -> PokemonRaw {
-            let mut data = [0u8; 0x2C];
-            data.copy_from_slice(&self.data[offset..offset + 0x2C]);
+        pub fn get_current_box_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
+            let count = self.get_current_box_pokemon_count();
+
+            if count <= 0 || count > offsets::MAX_POKEMON_BOX_SIZE {
+                return Err(PartyError::LookupError);
+            }
+
+            let mut offset = offsets::BOX_CURRENT_FIRST_PKMN;
+            let mut list = Vec::new();
+
+            for _ in 0..count {
+                let raw = self.read_box_pokemon_raw(offset);
+                let pokemon = Pokemon::from_raw(raw);
+                list.push(pokemon);
+                offset += offsets::BOX_NEXT_PKMN;
+            }
+            Ok(list)
+        }
+
+        pub fn read_party_pokemon_raw(&self, offset: usize) -> PokemonRaw {
+            let mut data = [0u8; offsets::PARTY_NEXT_PKMN];
+            data.copy_from_slice(&self.data[offset..offset + offsets::PARTY_NEXT_PKMN]);
             PokemonRaw::new(data)
+        }
+
+        pub fn read_box_pokemon_raw(&self, offset: usize) -> PokemonRaw {
+            let mut data = [0u8; offsets::PARTY_NEXT_PKMN];
+            data[..offsets::BOX_NEXT_PKMN].copy_from_slice(&self.data[offset..offset + offsets::BOX_NEXT_PKMN]);
+            PokemonRaw::new(data)
+
         }
 
         pub fn get_badges(&self) -> Badges {

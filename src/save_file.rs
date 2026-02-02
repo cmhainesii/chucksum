@@ -42,6 +42,11 @@ pub enum PartyError {
     LookupError
 }
 
+#[derive(Debug)]
+pub enum BoxPokemonError {
+    InvalidBoxNumber,
+}
+
 pub enum ItemStorage {
     PcBox,
     Bag,
@@ -68,6 +73,14 @@ impl std::fmt::Display for PartyError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PartyError::LookupError => write!(f, "Party data is corrupted")
+        }
+    }
+}
+
+impl std::fmt::Display for BoxPokemonError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoxPokemonError::InvalidBoxNumber => write!(f, "Invalid box number!")
         }
     }
 }
@@ -348,6 +361,19 @@ impl SaveFile {
             self.read_byte(offsets::BOX_CURRENT_DATA_OFFSET) as usize
         }
 
+        pub fn get_box_pokemon_count(&self, box_number: usize) -> usize {
+            
+            if box_number > 0 && box_number <= 6 {
+                let offset = offsets::_BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
+                return self.read_byte(offset) as usize;
+            }
+            else if box_number > 6 && box_number <= 12 {
+                let offset = offsets::_BOX_6_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
+                return self.read_byte(offset) as usize;
+            }
+            return 0;
+        }
+
         pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
             let count = self.get_party_count();
             
@@ -385,6 +411,41 @@ impl SaveFile {
                 list.push(pokemon);
                 offset += offsets::BOX_NEXT_PKMN;
             }
+            Ok(list)
+        }
+
+        pub fn get_box_pokemon_data(&self, box_number: usize) -> Result<Vec<Pokemon>, BoxPokemonError> {
+
+            if box_number < 1 || box_number > 12 {
+                return Err(BoxPokemonError::InvalidBoxNumber);
+            }
+            let count = self.get_box_pokemon_count(box_number);
+            let mut list = Vec::new();
+            
+            // Set offset to the first byte in the box structure
+            // Handle box 1-6:
+            let mut offset: usize;
+            if box_number <= 6 {
+                offset = offsets::_BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
+                println!("offset: {offset}");
+                assert_eq!(1, 0);
+            }
+            // Handle box 7-12
+            else {
+                offset = offsets::_BOX_6_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
+            }
+
+            // Skip to begining of first pokemon's data
+            offset += offsets::BOX_START_TO_FIRST; 
+
+
+            for _ in 0..count {
+                let raw = self.read_box_pokemon_raw(offset);
+                let pokemon = Pokemon::from_raw(raw);
+                list.push(pokemon);
+                offset += offsets::BOX_NEXT_PKMN;
+            }
+
             Ok(list)
         }
 

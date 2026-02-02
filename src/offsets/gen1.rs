@@ -36,6 +36,7 @@ pub const _BOX_6_DATA_OFFSET: usize = 0x6000;
 pub const BOX_CURRENT_DATA_OFFSET: usize = 0x30C0;
 pub const BOX_START_TO_FIRST: usize = 0x16;
 pub const BOX_NEXT_PKMN: usize = 0x21;
+pub const BOX_NEXT_BOX: usize = 0x462;
 
 // All adition below will be rooting from this first offset. Begin of first party pokemon data.
 pub const PARTY_FIRST_PKMN: usize = PARTY_DATA_OFFSET + PARTY_START_TO_FIRST;

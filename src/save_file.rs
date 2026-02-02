@@ -38,14 +38,12 @@ pub enum BagError {
 }
 
 #[derive(Debug)]
-pub enum PartyError {
-    LookupError
+pub enum PokemonError {
+    LookupError,
+    InvalidBoxNumber,
+    InvalidData,
 }
 
-#[derive(Debug)]
-pub enum BoxPokemonError {
-    InvalidBoxNumber,
-}
 
 pub enum ItemStorage {
     PcBox,
@@ -69,18 +67,12 @@ impl std::fmt::Display for BagError {
     }
 }
 
-impl std::fmt::Display for PartyError {
+impl std::fmt::Display for PokemonError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PartyError::LookupError => write!(f, "Party data is corrupted")
-        }
-    }
-}
-
-impl std::fmt::Display for BoxPokemonError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            BoxPokemonError::InvalidBoxNumber => write!(f, "Invalid box number!")
+            PokemonError::LookupError => write!(f, "Party data is corrupted"),
+            PokemonError::InvalidBoxNumber => write!(f, "Invalid box number"),
+            PokemonError::InvalidData => write!(f, "Invalid or corrupted data"),
         }
     }
 }
@@ -334,11 +326,11 @@ impl SaveFile {
             self.write_bytes(offsets::MONEY_OFFSET, &bytes);
         }
 
-        pub fn get_party_species_names(&self) -> Result<Vec<&'static str>, PartyError> {
+        pub fn get_party_species_names(&self) -> Result<Vec<&'static str>, PokemonError> {
 
             let count = self.read_byte(offsets::PARTY_DATA_OFFSET);
             if count <= 0 || count > 6 {
-                return Err(PartyError::LookupError);
+                return Err(PokemonError::InvalidData);
             }
             let mut species_names: Vec<&'static str> = Vec::new();
             let count = self.read_byte(offsets::PARTY_DATA_OFFSET);
@@ -348,7 +340,7 @@ impl SaveFile {
                 species_names.push(Pokemon::get_species_name(species_id));
             }
             if species_names.len() == 0 || species_names.len() > 6 {
-                return Err(PartyError::LookupError);
+                return Err(PokemonError::InvalidData);
             }
             Ok(species_names)
         }
@@ -374,11 +366,11 @@ impl SaveFile {
             return 0;
         }
 
-        pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
+        pub fn get_party_pokemon_data(&self) -> Result<Vec<Pokemon>, PokemonError> {
             let count = self.get_party_count();
             
             if count <= 0 || count > offsets::MAX_PARTY_SIZE {
-                return Err(PartyError::LookupError);
+                return Err(PokemonError::InvalidData);
             }
 
             let mut offset = offsets::PARTY_FIRST_PKMN;
@@ -395,11 +387,11 @@ impl SaveFile {
         }
         
 
-        pub fn get_current_box_pokemon_data(&self) -> Result<Vec<Pokemon>, PartyError> {
+        pub fn get_current_box_pokemon_data(&self) -> Result<Vec<Pokemon>, PokemonError> {
             let count = self.get_current_box_pokemon_count();
 
             if count <= 0 || count > offsets::MAX_POKEMON_BOX_SIZE {
-                return Err(PartyError::LookupError);
+                return Err(PokemonError::LookupError);
             }
 
             let mut offset = offsets::BOX_CURRENT_FIRST_PKMN;
@@ -414,10 +406,10 @@ impl SaveFile {
             Ok(list)
         }
 
-        pub fn get_box_pokemon_data(&self, box_number: usize) -> Result<Vec<Pokemon>, BoxPokemonError> {
+        pub fn get_box_pokemon_data(&self, box_number: usize) -> Result<Vec<Pokemon>, PokemonError> {
 
             if box_number < 1 || box_number > 12 {
-                return Err(BoxPokemonError::InvalidBoxNumber);
+                return Err(PokemonError::InvalidBoxNumber);
             }
             let count = self.get_box_pokemon_count(box_number);
             let mut list = Vec::new();
@@ -466,7 +458,7 @@ impl SaveFile {
             Badges::from_bits_truncate(self.read_byte(offsets::BADGES))
         }
 
-        pub fn badges_strings(&self) -> Result<Vec<&'static str>, PartyError> {
+        pub fn badges_strings(&self) -> Result<Vec<&'static str>, PokemonError> {
             let b = self.get_badges();
             // let b = Badges::from_bits_truncate(0b0010_1111);
             let names = [
@@ -488,7 +480,7 @@ impl SaveFile {
             }
 
             if collected.is_empty() {
-                Err(PartyError::LookupError)
+                Err(PokemonError::LookupError)
             } else {
                 Ok(collected)
             }

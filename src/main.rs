@@ -121,10 +121,9 @@ fn main() -> std::io::Result<()> {
     println!("Player ID: {}", save_file.get_player_id());
 
 
-    println!("Box 1 count: {}", save_file.get_box_pokemon_count(1));
-    println!("Box 2 count: {}", save_file.get_box_pokemon_count(2));
-    println!("Box 4 count: {}", save_file.get_box_pokemon_count(4));
-    println!("Box 7 count: {}", save_file.get_box_pokemon_count(7));
+    for index in 1..13 {
+        println!("Box {index} count: {}", save_file.get_box_pokemon_count(index));
+    }
 
     match save_file.get_box_pokemon_data(7) {
         Ok(pokemon_list) => print_pokemon_list(pokemon_list),

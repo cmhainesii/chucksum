@@ -364,11 +364,11 @@ impl SaveFile {
         pub fn get_box_pokemon_count(&self, box_number: usize) -> usize {
             
             if box_number > 0 && box_number <= 6 {
-                let offset = offsets::_BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
+                let offset = offsets::BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
                 return self.read_byte(offset) as usize;
             }
             else if box_number > 6 && box_number <= 12 {
-                let offset = offsets::_BOX_6_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
+                let offset = offsets::BOX_7_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
                 return self.read_byte(offset) as usize;
             }
             return 0;
@@ -426,13 +426,13 @@ impl SaveFile {
             // Handle box 1-6:
             let mut offset: usize;
             if box_number <= 6 {
-                offset = offsets::_BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
+                offset = offsets::BOX_1_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 1));
                 println!("offset: {offset}");
                 assert_eq!(1, 0);
             }
             // Handle box 7-12
             else {
-                offset = offsets::_BOX_6_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
+                offset = offsets::BOX_7_DATA_OFFSET + (offsets::BOX_NEXT_BOX * (box_number - 7));
             }
 
             // Skip to begining of first pokemon's data

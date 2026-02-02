@@ -31,8 +31,8 @@ pub const PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to g
 
 pub const BADGES: usize = 0x2602;
 
-pub const _BOX_1_DATA_OFFSET: usize = 0x4000;
-pub const _BOX_6_DATA_OFFSET: usize = 0x6000;
+pub const BOX_1_DATA_OFFSET: usize = 0x4000;
+pub const BOX_7_DATA_OFFSET: usize = 0x6000;
 pub const BOX_CURRENT_DATA_OFFSET: usize = 0x30C0;
 pub const BOX_START_TO_FIRST: usize = 0x16;
 pub const BOX_NEXT_PKMN: usize = 0x21;
@@ -40,8 +40,6 @@ pub const BOX_NEXT_BOX: usize = 0x462;
 
 // All adition below will be rooting from this first offset. Begin of first party pokemon data.
 pub const PARTY_FIRST_PKMN: usize = PARTY_DATA_OFFSET + PARTY_START_TO_FIRST;
-pub const _BOX1_FIRST_PKMN: usize = _BOX_1_DATA_OFFSET + BOX_START_TO_FIRST;
-pub const _BOX6_FIRST_PKMN: usize = _BOX_6_DATA_OFFSET + BOX_START_TO_FIRST;
 pub const BOX_CURRENT_FIRST_PKMN: usize = BOX_CURRENT_DATA_OFFSET + BOX_START_TO_FIRST;
 
 // All of these constants can be added to the current pokemon's offset 

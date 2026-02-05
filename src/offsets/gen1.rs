@@ -27,7 +27,13 @@ pub const MAX_PARTY_SIZE: usize = 6;
 pub const MAX_POKEMON_BOX_SIZE: usize = 20;
 pub const PARTY_SPECIES_LIST_OFFSET: usize = 1; // Add this to party data offset to get first species in species list.
 pub const _PARTY_LIST_TERMINATOR: u8 = 0xFF;
+pub const PARTY_FIRST_OT: usize = 0x303C;
+pub const PARTY_OT_NICK_SIZE: usize = 10;
+pub const PARTY_FIRST_NICK: usize = 0x307E;
+
 pub const PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to get to first party pokemon
+
+pub const NUM_POKEMON_BOXES: usize = 12;    
 
 pub const BADGES: usize = 0x2602;
 
@@ -37,6 +43,8 @@ pub const BOX_CURRENT_DATA_OFFSET: usize = 0x30C0;
 pub const BOX_START_TO_FIRST: usize = 0x16;
 pub const BOX_NEXT_PKMN: usize = 0x21;
 pub const BOX_NEXT_BOX: usize = 0x462;
+pub const BOX_FIRST_OT: usize = 0x2AA;
+pub const BOX_FIRST_NICK: usize = 0x386;
 
 // All adition below will be rooting from this first offset. Begin of first party pokemon data.
 pub const PARTY_FIRST_PKMN: usize = PARTY_DATA_OFFSET + PARTY_START_TO_FIRST;
@@ -72,3 +80,8 @@ pub const PARTY_ATTACK: usize = 0x24;
 pub const PARTY_DEFENSE: usize = 0x26;
 pub const PARTY_SPEED: usize = 0x28;
 pub const PARTY_SPECIAL: usize = 0x2A;
+
+pub const BANK2_WHOLE_CHECKSUM: usize = 0x5A4C;
+pub const BANK3_WHOLE_CHECKSUM: usize = 0x7A4C;
+
+

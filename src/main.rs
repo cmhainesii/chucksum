@@ -104,10 +104,10 @@ fn main() -> std::io::Result<()> {
         Err(e) => println!("Lookup error: {e}")
     }
 
-    match save_file.get_current_box_pokemon_data() {
-        Ok(pokemon_list) => print_pokemon_list(pokemon_list),
-        Err(e) => println!("Lookup error: {e}")
-    }
+    // match save_file.get_current_box_pokemon_data() {
+    //     Ok(pokemon_list) => print_pokemon_list(pokemon_list),
+    //     Err(e) => println!("Lookup error: {e}")
+    // }
 
     match save_file.badges_strings() {
         Ok(badges) => {
@@ -125,14 +125,33 @@ fn main() -> std::io::Result<()> {
         println!("Box {index} count: {}", save_file.get_box_pokemon_count(index));
     }
 
-    match save_file.get_box_pokemon_data(7) {
-        Ok(pokemon_list) => print_pokemon_list(pokemon_list),
+    println!("\nAfter write...\n");
+
+    // match save_file.get_party_pokemon_data() {
+    //     Ok(pokemon_list) => print_pokemon_list(pokemon_list),
         
-        Err(e) => {
-            println!("Box Data Error: {e}");
-        }
+    //     Err(e) => {
+    //         println!("Box Data Error: {e}");
+    //     }
+    // }
+    match save_file.copy_party_pokemon(1, 6) {
+        Ok(()) => (),
+        Err(e) => println!("Error: {e}")
     }
 
+    for index in 1..13 {
+        println!("Box {index} count: {}", save_file.get_box_pokemon_count(index));
+    }
+
+    match save_file.get_box_pokemon_data(6) {
+        Ok(pokemon_list) => print_pokemon_list(pokemon_list),
+        Err(e) => println!("Error: {e}")
+    }
+    
+    match save_file.get_party_pokemon_data() {
+        Ok(pokemon_list) => print_pokemon_list(pokemon_list),
+        Err(e) => println!("Error: {e}"),
+    }
     // Save to file 'pokemon red.sav'. Will automatically update main checksum.
     save_file.save("pokemon red.sav")?;
 

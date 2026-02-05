@@ -66,6 +66,13 @@ impl PokemonRaw {
             | ((self.data[offset+1] as u32) << 8)
             | self.data[offset + 2] as u32
     }
+
+    pub fn get_for_box(&self) -> &[u8] {
+        &self.data[..33]
+    }
+    pub fn get_for_party(&self) -> &[u8] {
+        &self.data
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

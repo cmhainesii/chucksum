@@ -547,27 +547,37 @@ impl SaveFile {
     
     pub fn copy_party_pokemon(&mut self, party_slot: usize, box_number: usize) -> Result<(), PokemonError> {
         
+        // Check parameters passed in are valid and error if not        
         if party_slot <= 0 || party_slot > offsets::MAX_PARTY_SIZE {
             return Err(PokemonError::InvalidPartySlot);
-        }
-        
+        }        
         if box_number <= 0 || box_number > offsets::NUM_POKEMON_BOXES {
             return Err(PokemonError::InvalidBoxNumber);
         }
         
+        // Ensure box selected has a free spot, otherwise error and abort
         let box_count = self.get_box_pokemon_count(box_number);
         if box_count >= 20 {
             return Err(PokemonError::PokemonBoxFull);
         }
         
+        // Ensure the party slot passed in is valid and has a pokemone in it, otherwise error and abort
         if self.get_party_count() < party_slot {
             return Err(PokemonError::InvalidPartySlot)
         }
         
+        // Copy the pokemon's data from the party as a PokemonRaw object
         let mut offset = offsets::PARTY_FIRST_PKMN + (offsets::PARTY_NEXT_PKMN * (party_slot - 1));
         let raw_pokemon = self.read_party_pokemon_raw(offset);
         
-        
+        // Determine the starting offset. If box_number is the current box: use the current box offset
+        // If box 1-6 (bank2), start at the begin of bank 2
+        // If box 7-12 (bank3), start at the begin of bank 3.
+        // If box 1-12, also skip forard to the start of the selected box in bank 1 or 2.
+        if self.get_current_box() == box_number {
+            offset = offsets::BOX_CURRENT_DATA_OFFSET;
+        }
+
         if box_number <= 6 {
             offset = offsets::BOX_1_DATA_OFFSET;
             offset += offsets::BOX_NEXT_BOX * (box_number - 1);
@@ -577,20 +587,27 @@ impl SaveFile {
             offset += offsets::BOX_NEXT_BOX * (box_number - 7);
         }
         
+        // Save the beginning offset of the first nickname and OT name in the destination box
+        // This is where we will copy the nickanme and OT strings in the PC box when we do the copy
         let ot_destination_offset = offset + offsets::BOX_FIRST_OT;
         let nick_destination_offset = offset + offsets::BOX_FIRST_NICK;             
         
+        // Move the current offset forward to the first pokemon in the box
         offset += offsets::BOX_START_TO_FIRST;
         offset += offsets::BOX_NEXT_PKMN * box_count;
         
         
-        let mut data = raw_pokemon.get_for_box();
+        // Extract the data from pokemon raw. This function restructures the pokemon from the 44 byte party
+        // data to the PC box's smaller 33 byte pokemon structure. If we were cloning to party
+        // we would stick with the 44 byte structure here (get_for_party())
+        let data = raw_pokemon.get_for_box();
         
-        
+        // Get the pokemone's nickname and OT strings from the offsets determined above
         let ot_source_offset = offsets::PARTY_FIRST_OT + (offsets::PARTY_OT_NICK_SIZE * (party_slot - 1));
         let ot_name = self.read_string(ot_source_offset, 0x50);
         println!("OT Name: {ot_name}");
         
+        // Extract the nickname and OT from the party pokemon
         let nick_source_offset = offsets::PARTY_FIRST_NICK + (offsets::PARTY_OT_NICK_SIZE * (party_slot - 1));
         let nick_name = self.read_string(nick_source_offset, offsets::NAME_TERMINATOR);
         println!("Nick Name: {nick_name}");
@@ -599,22 +616,31 @@ impl SaveFile {
         let nick = self.read_string(nick_offset, offsets::NAME_TERMINATOR);
         println!("Nick!: {nick}");
         
+        // Write 33 byte pokemon structure to PC box (Main pokemon data w/o nick and OT)
         self.write_bytes(offset, &data);
-        println!("Pokemon write offset: 0x{offset:04X}");
-        // update count of box's pokemon list
+
+        // update count of box's pokemon list so the game knows we added a pokemon to the box.
         let count_update_offset = self.get_box_pokemon_count_offset(box_number);
         self.write_byte(count_update_offset, (box_count + 1) as u8);
+
+        // The beginning of a pokemon list is a list of the species ID's of the pokemon in the box. Add the species 
+        // id of the pokemon we just added to this list:
         let species_update_offset = count_update_offset + box_count + 1;
         let species_data = &[raw_pokemon.get_for_box()[0], 0xFF];
         self.write_bytes(species_update_offset, species_data);
-        println!("Box count update offset: 0x{:04X}", self.get_box_pokemon_count_offset(box_number));
         
+        // Finally, write the nickname and OT strings to the PC box.
         self.write_string(&ot_name, ot_destination_offset, offsets::NAME_TERMINATOR);
         self.write_string(&nick_name, nick_destination_offset, offsets::NAME_TERMINATOR);
         
+        // Ok all finished! Remember, must call .save() so the checksums get updated for the boxes & main data checksum!!!
         Ok(())
     }
-    
+
+
+    pub fn get_current_box(&self) -> usize {
+        ((self.read_byte(offsets::CURRENT_BOX) & 0x7F) + 1) as usize
+    }
     
     
     

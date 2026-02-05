@@ -156,7 +156,7 @@ fn main() -> std::io::Result<()> {
     save_file.save("pokemon red.sav")?;
 
     
-    
+    println!("Current Box: {}", save_file.get_current_box());
     
     Ok(())
 }

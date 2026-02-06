@@ -28,7 +28,7 @@ pub const MAX_POKEMON_BOX_SIZE: usize = 20;
 pub const PARTY_SPECIES_LIST_OFFSET: usize = 1; // Add this to party data offset to get first species in species list.
 pub const _PARTY_LIST_TERMINATOR: u8 = 0xFF;
 pub const PARTY_FIRST_OT: usize = 0x303C;
-pub const PARTY_OT_NICK_SIZE: usize = 10;
+pub const PARTY_OT_NICK_SIZE: usize = 11;
 pub const PARTY_FIRST_NICK: usize = 0x307E;
 
 pub const PARTY_START_TO_FIRST: usize = 8; // Add this to party data offset to get to first party pokemon

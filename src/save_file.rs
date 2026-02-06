@@ -605,6 +605,9 @@ impl SaveFile {
         party_slot <= self.get_party_count()
     }
     
+    // This function is able to clone a party pokemon and deposit it in a PC pokemon box.
+    // The operation involves copying the main pokemon data structure, the nickname, and OT name
+    // of the pokemon to a PC box.
     pub fn copy_party_pokemon(&mut self, party_slot: usize, box_number: usize) -> Result<(), PokemonError> {
         
         // Check parameters passed in are valid and the box 

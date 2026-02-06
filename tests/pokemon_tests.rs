@@ -1,8 +1,12 @@
 
+use num_format::ToFormattedString;
+use num_format::Locale;
+
 use chucksum::pokemon::Pokemon;
 use chucksum::pokemon::PokemonRaw;
 use chucksum::offsets;
-
+use chucksum::save_file::SaveFile;
+use chucksum::pokemon::StatusCondtion;
 #[test]
 fn iv_nibbles_are_split_correctly() {
     let mut bytes = [0u8; offsets::PARTY_NEXT_PKMN];
@@ -17,42 +21,71 @@ fn iv_nibbles_are_split_correctly() {
     assert_eq!(p.special_iv, 0x0D); 
 }
 
+fn _print_pokemon_list(pokemon_list: &Vec<Pokemon>) {
+    for pokemon in pokemon_list {
+        println!("          Species: {}", Pokemon::get_species_name(pokemon.species_id));
+        println!("       Current HP: {}", pokemon.current_hp);
+        println!("           Max HP: {}", pokemon.max_hp);
+        println!("            Level: {}", pokemon.level);
+        println!("           Status: {}", StatusCondtion::from_byte(pokemon.status));
+        println!("             Type: {}", Pokemon::get_type_name(pokemon.pkmn_type_1));
+        println!("            Type2: {}", Pokemon::get_type_name(pokemon.pkmn_type_2));
+        println!("       Catch Rate: {}", pokemon.catch_rate);
+        println!("           Move 1: {}", Pokemon::get_move_name(pokemon.move_index1));
+        println!("           Move 2: {}", Pokemon::get_move_name(pokemon.move_index2));
+        println!("           Move 3: {}", Pokemon::get_move_name(pokemon.move_index3));
+        println!("           Move 4: {}", Pokemon::get_move_name(pokemon.move_index4));
+        println!("            OT ID: {}", pokemon.ot_id); 
+        println!("Experience Points: {}", pokemon.experience_pts.to_formatted_string(&Locale::en));
+        println!("      HP Stat Exp: {}", pokemon.hp_stat_exp.to_formatted_string(&Locale::en));
+        println!("  Attack Stat Exp: {}", pokemon.attack_stat_exp.to_formatted_string(&Locale::en));
+        println!(" Defense Stat Exp: {}", pokemon.defense_stat_exp.to_formatted_string(&Locale::en));
+        println!("   Speed Stat Exp: {}", pokemon.speed_stat_exp.to_formatted_string(&Locale::en));
+        println!(" Special Stat Exp: {}", pokemon.special_stat_exp.to_formatted_string(&Locale::en));
+        println!("        Attack IV: {}", pokemon.attack_iv);
+        println!("       Defense IV: {}", pokemon.defense_iv);
+        println!("         Speed IV: {}", pokemon.speed_iv);
+        println!("       Special IV: {}", pokemon.special_iv);
+        println!("           Attack: {}", pokemon.attack);
+        println!("          Defense: {}", pokemon.defense);
+        println!("            Speed: {}", pokemon.speed);
+        println!("          Special: {}\n", pokemon.special);
+    }
+}
+
+#[test]
+fn copy_party_pokemon_to_empty_box() -> std::io::Result<()> {
+    
+    let mut save_file = SaveFile::new("testing.srm")?;
+    const BOX_NUMBER: usize = 8;
+    const PATY_SLOT: usize = 6;
+    const EXPECTED_CURRENT_HP: u16 = 97;
+    const EXPECTED_PKMN_TYPE: u8 = 20; // Fire type
+    
+    if let Err(e) = save_file.copy_party_pokemon(PATY_SLOT, BOX_NUMBER) {
+        println!("Error: {e}");
+    }
+
+     match save_file.get_box_pokemon_data(BOX_NUMBER) {
+        
+        Ok(pokemon_list) => {
+            let pokemon = &pokemon_list[0];
+            assert_eq!(pokemon.current_hp, EXPECTED_CURRENT_HP);
+            assert_eq!(pokemon.pkmn_type_1, EXPECTED_PKMN_TYPE);
+        }
+        Err(e) => {
+            println!("Error: {e}");
+        }
+     }
+    
+    Ok(())
+    
+}
+
 #[test]
 fn from_raw_parses_all_fields_and_endianness() {
-    let mut bytes = [0u8; offsets::PARTY_NEXT_PKMN];
-    bytes[offsets::PARTY_SPECIES_ID] = 176; // Charmander
-    bytes[offsets::PARTY_CURRENT_HP] = 0x12;
-    bytes[offsets::PARTY_CURRENT_HP + 1] = 0x34;
-    bytes[offsets::PARTY_LEVEL] = 42;
-    bytes[offsets::PARTY_STATUS] = 0x40; // Paralyzed
-    bytes[offsets::PARTY_TYPE_1] = 20; // Fire
-    bytes[offsets::PARTY_TYPE_2] = 0; // Normal
-    bytes[offsets::PARTY_CATCH_RATE] = 200;
-    bytes[offsets::PARTY_MOVE_INDEX_1] = 52; // Ember
-    bytes[offsets::PARTY_MOVE_INDEX_2] = 53; //Flamethrower
-    bytes[offsets::PARTY_MOVE_INDEX_3] = 91; // Dig
-    bytes[offsets::PARTY_MOVE_INDEX_4] = 84; // Thunder Shock
-    bytes[offsets::PARTY_OT_ID] = 0xAA;
-    bytes[offsets::PARTY_OT_ID + 1] = 0xBB;
-    bytes[offsets::PARTY_EXPERIENCE_PTS] = 0x00;
-    bytes[offsets::PARTY_EXPERIENCE_PTS + 1] = 0x10;
-    bytes[offsets::PARTY_EXPERIENCE_PTS + 2] = 0x20;
-    bytes[offsets::PARTY_HP_STAT_EXP] = 0x34; // Little-endian
-    bytes[offsets::PARTY_HP_STAT_EXP + 1] = 0x12;
-    bytes[offsets::PARTY_ATTACK_STAT_EXP] = 0x78;
-    bytes[offsets::PARTY_ATTACK_STAT_EXP + 1] = 0x56;
-    bytes[offsets::PARTY_DEFENSE_STAT_EXP] = 0xBC;
-    bytes[offsets::PARTY_DEFENSE_STAT_EXP + 1] = 0x9A;
-    bytes[offsets::PARTY_SPEED_STAT_EXP] = 0xF0;
-    bytes[offsets::PARTY_SPEED_STAT_EXP + 1] = 0xDE;
-    bytes[offsets::PARTY_SPECIAL_STAT_EXP] = 0x44;
-    bytes[offsets::PARTY_SPECIAL_STAT_EXP + 1] = 0x33;
-    bytes[offsets::PARTY_IV_1] = 0xAB;
-    bytes[offsets::PARTY_IV_2] = 0xCD;
-    bytes[offsets::PARTY_MAX_HP] = 0x12;
-    bytes[offsets::PARTY_MAX_HP + 1] = 0x34;
-
-    let p = Pokemon::from_raw(PokemonRaw::new(bytes));
+    
+    let p = example_pokemon_raw();
 
     assert_eq!(p.species_id, 176);
     assert_eq!(p.current_hp, 0x1234);
@@ -101,4 +134,41 @@ fn get_type_name_returns_correct_name() {
     assert_eq!(Pokemon::get_type_name(26), "Dragon");
     assert_eq!(Pokemon::get_type_name(35), "Invalid/Unknown");
     assert_eq!(Pokemon::get_type_name(99), "Invalid/Unknown");
+}
+
+fn example_pokemon_raw() -> Pokemon {
+    let mut bytes = [0u8; offsets::PARTY_NEXT_PKMN];
+    bytes[offsets::PARTY_SPECIES_ID] = 176; // Charmander
+    bytes[offsets::PARTY_CURRENT_HP] = 0x12;
+    bytes[offsets::PARTY_CURRENT_HP + 1] = 0x34;
+    bytes[offsets::PARTY_LEVEL] = 42;
+    bytes[offsets::PARTY_STATUS] = 0x40; // Paralyzed
+    bytes[offsets::PARTY_TYPE_1] = 20; // Fire
+    bytes[offsets::PARTY_TYPE_2] = 0; // Normal
+    bytes[offsets::PARTY_CATCH_RATE] = 200;
+    bytes[offsets::PARTY_MOVE_INDEX_1] = 52; // Ember
+    bytes[offsets::PARTY_MOVE_INDEX_2] = 53; //Flamethrower
+    bytes[offsets::PARTY_MOVE_INDEX_3] = 91; // Dig
+    bytes[offsets::PARTY_MOVE_INDEX_4] = 84; // Thunder Shock
+    bytes[offsets::PARTY_OT_ID] = 0xAA;
+    bytes[offsets::PARTY_OT_ID + 1] = 0xBB;
+    bytes[offsets::PARTY_EXPERIENCE_PTS] = 0x00;
+    bytes[offsets::PARTY_EXPERIENCE_PTS + 1] = 0x10;
+    bytes[offsets::PARTY_EXPERIENCE_PTS + 2] = 0x20;
+    bytes[offsets::PARTY_HP_STAT_EXP] = 0x34; // Little-endian
+    bytes[offsets::PARTY_HP_STAT_EXP + 1] = 0x12;
+    bytes[offsets::PARTY_ATTACK_STAT_EXP] = 0x78;
+    bytes[offsets::PARTY_ATTACK_STAT_EXP + 1] = 0x56;
+    bytes[offsets::PARTY_DEFENSE_STAT_EXP] = 0xBC;
+    bytes[offsets::PARTY_DEFENSE_STAT_EXP + 1] = 0x9A;
+    bytes[offsets::PARTY_SPEED_STAT_EXP] = 0xF0;
+    bytes[offsets::PARTY_SPEED_STAT_EXP + 1] = 0xDE;
+    bytes[offsets::PARTY_SPECIAL_STAT_EXP] = 0x44;
+    bytes[offsets::PARTY_SPECIAL_STAT_EXP + 1] = 0x33;
+    bytes[offsets::PARTY_IV_1] = 0xAB;
+    bytes[offsets::PARTY_IV_2] = 0xCD;
+    bytes[offsets::PARTY_MAX_HP] = 0x12;
+    bytes[offsets::PARTY_MAX_HP + 1] = 0x34;
+
+    Pokemon::from_raw(PokemonRaw::new(bytes))
 }
